@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { SidebarProvider } from './SidebarProvider';
 
 // Define the types for the Roocode API based on the source code
 enum RooCodeEventName {
@@ -71,6 +72,13 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         });
 
+        const sidebarProvider = new SidebarProvider(context.extensionUri);
+        context.subscriptions.push(
+            vscode.window.registerWebviewViewProvider(
+                "joey.sidebar",
+                sidebarProvider
+            )
+        );
         context.subscriptions.push(disposable);
 
     } catch (error) {

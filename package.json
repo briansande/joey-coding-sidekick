@@ -17,6 +17,25 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "joey-sidekick",
+          "title": "Joey",
+          "icon": "media/joey.svg"
+        }
+      ]
+    },
+    "views": {
+      "joey-sidekick": [
+        {
+          "id": "joey.sidebar",
+          "name": "Joey",
+          "type": "webview",
+          "contextualTitle": "Joey"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "joey-coding-sidekick.startTask",

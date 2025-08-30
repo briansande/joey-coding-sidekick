@@ -1,4 +1,5 @@
 body {
+    background-color: rgb(58, 58, 58);
     padding: 1rem;
 }
 
@@ -10,4 +11,10 @@ body {
 
 .event-container h3 {
     margin-top: 0;
+}
+.mode-container {
+	border: 1px solid var(--vscode-editorWidget-border);
+	padding: 10px;
+	margin: 10px 0;
+	background-color: var(--vscode-button-secondaryBackground);
 }

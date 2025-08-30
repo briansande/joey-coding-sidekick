@@ -174,4 +174,35 @@ interface ClineMessage {
 }
 ```
 
-For more details on `ClineAsk` and `ClineSay` types, please refer to the `@roo-code/types` package.
+#### `ClineAsk`
+
+A `ClineAsk` message is sent when the Roocode agent needs to **ask for permission or clarification** from the user before it can proceed. Here are the possible `ask` types:
+
+*   `followup`: The agent is asking a clarifying question to get more information.
+*   `command`: The agent is asking for permission to execute a terminal/shell command.
+*   `command_output`: The agent wants to read the output from a command it just ran.
+*   `completion_result`: The agent believes the task is finished and is waiting for user feedback.
+*   `tool`: The agent is asking for permission to use a file system tool (e.g., `read_file`, `write_to_file`).
+*   `api_req_failed`: An API request made by the agent failed, and it's asking whether to retry.
+*   `resume_task`: The agent needs confirmation to resume a task that was paused.
+*   `resume_completed_task`: The agent needs confirmation to resume a task that was already marked as completed.
+*   `mistake_limit_reached`: The agent has made too many errors and needs guidance from the user.
+*   `browser_action_launch`: The agent is asking for permission to launch or interact with a browser.
+*   `use_mcp_server`: The agent wants to use a tool from a connected MCP server.
+*   `auto_approval_max_req_reached`: The agent has reached its limit for automatically approved actions and now requires manual approval.
+
+#### `ClineSay`
+
+A `ClineSay` message is sent when the Roocode agent wants to **provide information** to the user. These are informational messages that don't require a direct response. Here are the possible `say` types:
+
+*   `error`: A general error message.
+*   `api_req_started`: Informs the user that an API request has been initiated.
+*   `api_req_finished`: Informs the user that an API request has completed.
+*   `text`: A general text message or response from the agent.
+*   `reasoning`: The agent's thought process or reasoning behind an action (this is often hidden but available for debugging).
+*   `completion_result`: The final result of a completed task.
+*   `user_feedback`: A message containing feedback provided by the user.
+*   `command_output`: The output from an executed command.
+*   `browser_action_result`: The result of an action performed in the browser.
+*   `subtask_result`: The result from a completed subtask.
+*   ...and several others for more specific situations like retries, warnings, and context changes.

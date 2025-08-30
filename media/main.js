@@ -10,23 +10,32 @@
     window.addEventListener('message', event => {
         const message = event.data; // The json data that the extension sent
 
-        const eventContainer = document.createElement('div');
-        eventContainer.className = 'event-container';
+        if (chatContainer) {
+            if (message.type === 'message') {
+                const messageContainer = document.createElement('div');
+                messageContainer.className = 'message-container';
 
-        const eventTitle = document.createElement('h3');
-        eventTitle.textContent = message.type;
-        eventContainer.appendChild(eventTitle);
+                const messageData = document.createElement('pre');
 
-        const eventData = document.createElement('pre');
+                if (typeof message.value === 'string') {
+                    messageData.textContent = message.value;
+                } else {
+                    messageData.textContent = JSON.stringify(message.value, null, 2);
+                }
 
-        if (message.type === 'taskModeSwitched' && message.value && message.value.modeSlug) {
-            eventData.textContent = `Mode switched to: ${message.value.modeSlug}`;
-        } else {
-            eventData.textContent = JSON.stringify(message.value, null, 2);
+                messageContainer.appendChild(messageData);
+
+                chatContainer.appendChild(messageContainer);
+            } else if (message.type === 'taskModeSwitched') {
+                const modeContainer = document.createElement('div');
+                modeContainer.className = 'mode-container';
+
+                const modeData = document.createElement('p');
+                modeData.textContent = `Mode switched to ${message.value.modeSlug}`;
+                modeContainer.appendChild(modeData);
+
+                chatContainer.appendChild(modeContainer);
+            }
         }
-        
-        eventContainer.appendChild(eventData);
-
-        chatContainer.appendChild(eventContainer);
     });
 }());

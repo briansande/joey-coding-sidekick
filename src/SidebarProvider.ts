@@ -60,8 +60,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 				<title>Joey</title>
 			</head>
 			<body>
-                <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" />
-                <h1>Hello from Joey!</h1>
                 <div id="chat-container"></div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>

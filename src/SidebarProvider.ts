@@ -39,7 +39,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css'));
         const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css'));
         const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css'));
-        const joeyImageUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'joey.svg'));
+        const charSpriteUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'assets', 'char-sprite-sheet.png'));
 
         // Use a nonce to only allow specific scripts to be run
         const nonce = getNonce();
@@ -52,20 +52,25 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 					Use a content security policy to only allow loading images from https or from our extension directory,
 					and only allow scripts that have a specific nonce.
 				-->
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
+				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<link href="${styleResetUri}" rel="stylesheet">
 				<link href="${styleVSCodeUri}" rel="stylesheet">
 				<link href="${styleMainUri}" rel="stylesheet">
 				
 				<title>Joey</title>
+                <style>
+                    :root {
+                        --char-sprite-sheet: url(${charSpriteUri});
+                    }
+                </style>
 			</head>
 			<body>
                 <div id="message-container-wrapper">
                     <div id="chat-container"></div>
                 </div>
                 <div id="pet-container">
-                    <img src="${joeyImageUri}" alt="Joey the virtual pet" />
+                    <div id="character" class="idle"></div>
                 </div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>

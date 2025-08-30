@@ -9,15 +9,37 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "*"
+  ],
+  "extensionDependencies": [
+    "RooVeterinaryInc.roo-cline"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "joey-coding-sidekick.helloWorld",
-        "title": "Hello World"
+        "command": "joey-coding-sidekick.startTask",
+        "title": "Joey: Start New Roocode Task"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "joey-sidebar",
+          "title": "Joey",
+          "icon": "media/joey.svg"
+        }
+      ]
+    },
+    "views": {
+      "joey-sidebar": [
+        {
+          "id": "joey.view",
+          "name": "Joey"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

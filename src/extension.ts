@@ -4,6 +4,16 @@ import { SidebarProvider } from './SidebarProvider';
 // Define the types for the Roocode API based on the source code
 enum RooCodeEventName {
     Message = "message",
+    TaskCreated = "taskCreated",
+    TaskStarted = "taskStarted",
+    TaskCompleted = "taskCompleted",
+    TaskAborted = "taskAborted",
+    TaskPaused = "taskPaused",
+    TaskUnpaused = "taskUnpaused",
+    TaskSpawned = "taskSpawned",
+    TaskModeSwitched = "taskModeSwitched",
+    TaskToolFailed = "taskToolFailed",
+    TaskTokenUsageUpdated = "taskTokenUsageUpdated",
 }
 
 interface RooCodeSettings {} // Empty for now, as we don't need to configure it
@@ -18,7 +28,7 @@ interface RooCodeAPI {
     sendMessage(message: string): Promise<void>;
     pressPrimaryButton(): Promise<void>;
     pressSecondaryButton(): Promise<void>;
-    on(event: RooCodeEventName, listener: (...args: any[]) => void): this;
+    on(event: string, listener: (...args: any[]) => void): this;
 }
 
 let rooApi: RooCodeAPI | undefined;
@@ -42,21 +52,36 @@ export async function activate(context: vscode.ExtensionContext) {
             return;
         }
 
+        const api = rooApi;
         vscode.window.showInformationMessage('Joey is connected to Roocode!');
 
-        // Listen for messages from Roocode
-        rooApi.on(RooCodeEventName.Message, (data: any) => {
-            if (data && data.message && data.message.text) {
-                vscode.window.showInformationMessage(`Roocode message: ${data.message.text}`);
-            }
+        const sidebarProvider = new SidebarProvider(context.extensionUri);
+
+        // Listen for all events from Roocode
+        Object.values(RooCodeEventName)
+            .filter(e => e !== RooCodeEventName.TaskModeSwitched)
+            .forEach(eventName => {
+                api.on(eventName, (data: any) => {
+                    console.log(`Received Roocode event: ${eventName}`, data);
+                    sidebarProvider.postMessageToWebview({ type: eventName, value: data });
+                });
+        });
+
+        // Handle taskModeSwitched separately as it has a different signature
+        api.on(RooCodeEventName.TaskModeSwitched, (taskId: string, modeSlug: string) => {
+            console.log(`Received Roocode event: ${RooCodeEventName.TaskModeSwitched}`, { taskId, modeSlug });
+            sidebarProvider.postMessageToWebview({
+                type: RooCodeEventName.TaskModeSwitched,
+                value: { taskId, modeSlug }
+            });
         });
 
         const disposable = vscode.commands.registerCommand('joey-coding-sidekick.startTask', async () => {
-            if (rooApi) {
+            if (api) {
                 const message = await vscode.window.showInputBox({ prompt: 'Enter a message to start a new Roocode task' });
                 if (message) {
                     try {
-                        const taskId = await rooApi.startNewTask({
+                        const taskId = await api.startNewTask({
                             configuration: {}, // Provide an empty configuration object
                             text: message,
                         });
@@ -72,7 +97,6 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         });
 
-        const sidebarProvider = new SidebarProvider(context.extensionUri);
         context.subscriptions.push(
             vscode.window.registerWebviewViewProvider(
                 "joey.sidebar",

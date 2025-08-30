@@ -1,0 +1,177 @@
+# Roocode Extension API Documentation
+
+This document provides a comprehensive overview of the Roocode Visual Studio Code extension's public API. It is intended for developers who want to build extensions that interact with Roocode.
+
+## Accessing the API
+
+To access the Roocode API, you first need to get a reference to the Roocode extension and then activate it. Once activated, the extension will return an API object that you can use to interact with Roocode.
+
+```typescript
+import * as vscode from 'vscode';
+import { RooCodeAPI } from '@roo-code/types'; // Assuming you have access to the types
+
+async function getRooCodeApi(): Promise<RooCodeAPI | undefined> {
+    const rooCodeExtension = vscode.extensions.getExtension('roocode.roocode');
+    if (!rooCodeExtension) {
+        console.error('Roocode extension not found.');
+        return undefined;
+    }
+
+    if (!rooCodeExtension.isActive) {
+        await rooCodeExtension.activate();
+    }
+
+    return rooCodeExtension.exports;
+}
+```
+
+The returned API object is an instance of the `API` class, which is an `EventEmitter`. This means you can listen for events using the `.on()` method and send commands using the public methods.
+
+## API Class
+
+The main API object exposes several methods to control Roocode tasks and configuration.
+
+### Task Management
+
+-   `startNewTask(options: { configuration: RooCodeSettings, text?: string, images?: string[], newTab?: boolean }): Promise<string>`: Starts a new Roocode task. Returns the `taskId` of the new task.
+-   `resumeTask(taskId: string): Promise<void>`: Resumes a previously paused task.
+-   `isTaskInHistory(taskId: string): Promise<boolean>`: Checks if a task exists in the history.
+-   `getCurrentTaskStack()`: Returns the current stack of active tasks.
+-   `clearCurrentTask(lastMessage?: string): Promise<void>`: Finishes the current sub-task.
+-   `cancelCurrentTask(): Promise<void>`: Cancels the currently active task.
+-   `cancelTask(taskId: string): Promise<void>`: Cancels a specific task by its ID.
+
+### User Interaction
+
+-   `sendMessage(text?: string, images?: string[]): Promise<void>`: Sends a message to the current task.
+-   `pressPrimaryButton(): Promise<void>`: Simulates a click on the primary button in the Roocode webview.
+-   `pressSecondaryButton(): Promise<void>`: Simulates a click on the secondary button in the Roocode webview.
+
+### State and Configuration
+
+-   `isReady(): boolean`: Returns `true` if the Roocode sidebar view has been launched.
+-   `getConfiguration(): RooCodeSettings`: Gets the current Roocode settings.
+-   `setConfiguration(values: RooCodeSettings): Promise<void>`: Sets the Roocode settings.
+-   `getProfiles(): string[]`: Gets the names of all available configuration profiles.
+-   `getProfileEntry(name: string): ProviderSettingsEntry | undefined`: Gets the details of a specific profile.
+-   `createProfile(name: string, profile?: ProviderSettings, activate?: boolean): Promise<string>`: Creates a new configuration profile.
+-   `updateProfile(name: string, profile: ProviderSettings, activate?: boolean): Promise<string | undefined>`: Updates an existing profile.
+-   `upsertProfile(name: string, profile: ProviderSettings, activate?: boolean): Promise<string | undefined>`: Creates a profile or updates it if it already exists.
+-   `deleteProfile(name: string): Promise<void>`: Deletes a profile.
+-   `getActiveProfile(): string | undefined`: Gets the name of the currently active profile.
+-   `setActiveProfile(name: string): Promise<string | undefined>`: Sets the active profile.
+
+## Events
+
+You can listen to events emitted by the API to monitor the state of Roocode tasks.
+
+```typescript
+rooApi.on('taskStarted', (taskId) => {
+    console.log(`Task ${taskId} has started.`);
+});
+```
+
+### Task Lifecycle Events
+
+-   `taskCreated: (taskId: string)`: Fired when a new task is created.
+-   `taskStarted: (taskId:string)`: Fired when a task starts running.
+-   `taskCompleted: (taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage, options: { isSubtask: boolean })`: Fired when a task finishes.
+-   `taskAborted: (taskId: string)`: Fired when a task is cancelled.
+-   `taskFocused: (taskId: string)`: Fired when a task gains focus.
+-   `taskUnfocused: (taskId: string)`: Fired when a task loses focus.
+-   `taskActive: (taskId: string)`: Fired when a task becomes active.
+-   `taskInteractive: (taskId: string)`: Fired when a task requires user interaction.
+-   `taskResumable: (taskId: string)`: Fired when a task can be resumed.
+-   `taskIdle: (taskId: string)`: Fired when a task is idle.
+
+### Subtask Lifecycle Events
+
+-   `taskPaused: (taskId: string)`: Fired when a subtask is paused.
+-   `taskUnpaused: (taskId: string)`: Fired when a subtask is resumed.
+-   `taskSpawned: (parentTaskId: string, childTaskId: string)`: Fired when a task creates a subtask.
+
+### Task Execution Events
+
+-   `message: (data: { taskId: string, action: 'created' | 'updated', message: ClineMessage })`: Fired when a new message is generated by a task.
+-   `taskModeSwitched: (taskId: string, modeSlug: string)`: Fired when the mode of a task changes.
+-   `taskAskResponded: (taskId: string)`: Fired when a user responds to an `ask` message.
+
+### Analytics Events
+
+-   `taskToolFailed: (taskId: string, toolName: ToolName, error: string)`: Fired when a tool used by a task fails.
+-   `taskTokenUsageUpdated: (taskId: string, usage: TokenUsage)`: Provides real-time updates on the token usage of a task.
+
+## Data Structures
+
+The API uses several data structures to pass information.
+
+### `TokenUsage`
+
+Provides information about the number of tokens used by a task.
+
+```typescript
+interface TokenUsage {
+    totalTokensIn: number;
+    totalTokensOut: number;
+    totalCacheWrites?: number;
+    totalCacheReads?: number;
+    totalCost: number;
+    contextTokens: number;
+}
+```
+
+### `ToolUsage`
+
+Provides information about the tools used by a task.
+
+```typescript
+type ToolUsage = Record<ToolName, {
+    attempts: number;
+    failures: number;
+}>;
+```
+
+### `ToolName`
+
+The following tool names are available:
+
+-   `execute_command`
+-   `read_file`
+-   `write_to_file`
+-   `apply_diff`
+-   `insert_content`
+-   `search_and_replace`
+-   `search_files`
+-   `list_files`
+-   `list_code_definition_names`
+-   `browser_action`
+-   `use_mcp_tool`
+-   `access_mcp_resource`
+-   `ask_followup_question`
+-   `attempt_completion`
+-   `switch_mode`
+-   `new_task`
+-   `fetch_instructions`
+-   `codebase_search`
+-   `update_todo_list`
+-   `generate_image`
+
+### `ClineMessage`
+
+Represents a message in the Roocode chat.
+
+```typescript
+interface ClineMessage {
+    ts: number;
+    type: 'ask' | 'say';
+    ask?: ClineAsk;
+    say?: ClineSay;
+    text?: string;
+    images?: string[];
+    partial?: boolean;
+    reasoning?: string;
+    // ... and other properties
+}
+```
+
+For more details on `ClineAsk` and `ClineSay` types, please refer to the `@roo-code/types` package.

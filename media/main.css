@@ -1,3 +1,13 @@
 body {
     padding: 1rem;
 }
+
+.event-container {
+    border: 1px solid var(--vscode-editorWidget-border);
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.event-container h3 {
+    margin-top: 0;
+}

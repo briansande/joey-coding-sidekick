@@ -25,6 +25,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
     }
+    public postMessageToWebview(message: { type: string, value: any }) {
+        if (this._view) {
+            this._view.webview.postMessage(message);
+        }
+    }
 
     private _getHtmlForWebview(webview: vscode.Webview) {
         // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
@@ -57,6 +62,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			<body>
                 <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" />
                 <h1>Hello from Joey!</h1>
+                <div id="chat-container"></div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;

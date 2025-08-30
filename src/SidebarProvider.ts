@@ -39,6 +39,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css'));
         const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css'));
         const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css'));
+        const joeyImageUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'joey.svg'));
 
         // Use a nonce to only allow specific scripts to be run
         const nonce = getNonce();
@@ -60,7 +61,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 				<title>Joey</title>
 			</head>
 			<body>
-                <div id="chat-container"></div>
+                <div id="message-container-wrapper">
+                    <div id="chat-container"></div>
+                </div>
+                <div id="pet-container">
+                    <img src="${joeyImageUri}" alt="Joey the virtual pet" />
+                </div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;

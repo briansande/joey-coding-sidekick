@@ -1,11 +1,25 @@
 // @ts-check
 
-// This script will be run in the webview itself
-// It cannot access the main VS Code APIs directly.
 (function () {
+    /**
+     * @typedef {{
+     *  postMessage: (message: any) => void
+     * }} VSCodeAPI
+     */
+
+    // @ts-ignore
     const vscode = acquireVsCodeApi();
 
     const chatContainer = document.getElementById('chat-container');
+    const petContainer = document.getElementById('pet-container');
+
+    const colors = {
+        architect: '#FFD700', // Gold
+        code: '#00BFFF',      // DeepSkyBlue
+        debug: '#FF4500',     // OrangeRed
+        ask: '#9370DB',       // MediumPurple
+        orchestrator: '#32CD32' // LimeGreen
+    };
 
     window.addEventListener('message', event => {
         const message = event.data; // The json data that the extension sent
@@ -35,6 +49,12 @@
                 modeContainer.appendChild(modeData);
 
                 chatContainer.appendChild(modeContainer);
+
+                if (petContainer) {
+                    const mode = message.value.modeSlug;
+                    const color = colors[mode] || `#${Math.floor(Math.random()*16777215).toString(16)}`;
+                    petContainer.style.backgroundColor = color;
+                }
             }
         }
     });

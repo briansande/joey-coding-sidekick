@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { JoeyViewProvider } from './JoeyViewProvider';
 
 // Define the types for the Roocode API based on the source code
 enum RooCodeEventName {
@@ -44,16 +43,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
         vscode.window.showInformationMessage('Joey is connected to Roocode!');
 
-        const provider = new JoeyViewProvider(context.extensionUri);
-
-        context.subscriptions.push(
-            vscode.window.registerWebviewViewProvider(JoeyViewProvider.viewType, provider));
-
         // Listen for messages from Roocode
         rooApi.on(RooCodeEventName.Message, (data: any) => {
             if (data && data.message && data.message.text) {
                 vscode.window.showInformationMessage(`Roocode message: ${data.message.text}`);
-                provider.addMessage(data.message.text);
             }
         });
 

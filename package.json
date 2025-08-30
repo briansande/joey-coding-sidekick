@@ -22,24 +22,7 @@
         "command": "joey-coding-sidekick.startTask",
         "title": "Joey: Start New Roocode Task"
       }
-    ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "joey-sidebar",
-          "title": "Joey",
-          "icon": "media/joey.svg"
-        }
-      ]
-    },
-    "views": {
-      "joey-sidebar": [
-        {
-          "id": "joey.view",
-          "name": "Joey"
-        }
-      ]
-    }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

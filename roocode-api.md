@@ -8,58 +8,37 @@ To access the Roocode API, you first need to get a reference to the Roocode exte
 
 ```typescript
 import * as vscode from 'vscode';
-import { RooCodeAPI } from '@roo-code/types'; // Assuming you have access to the types
+import { RooCodeAPI } from './types'; // Assuming you have access to the types from your extension
 
 async function getRooCodeApi(): Promise<RooCodeAPI | undefined> {
-    const rooCodeExtension = vscode.extensions.getExtension('roocode.roocode');
+    const rooCodeExtension = vscode.extensions.getExtension<RooCodeAPI>('RooVeterinaryInc.roo-cline');
     if (!rooCodeExtension) {
         console.error('Roocode extension not found.');
         return undefined;
     }
 
-    if (!rooCodeExtension.isActive) {
-        await rooCodeExtension.activate();
+    try {
+        const api = await rooCodeExtension.activate();
+        return api;
+    } catch (error) {
+        console.error('Failed to activate Roocode extension:', error);
+        return undefined;
     }
-
-    return rooCodeExtension.exports;
 }
 ```
 
-The returned API object is an instance of the `API` class, which is an `EventEmitter`. This means you can listen for events using the `.on()` method and send commands using the public methods.
+The returned API object is an instance of a class that implements `RooCodeAPI`, which is an `EventEmitter`. This means you can listen for events using the `.on()` method and send commands using the public methods.
 
-## API Class
+## API Methods
 
 The main API object exposes several methods to control Roocode tasks and configuration.
 
 ### Task Management
 
 -   `startNewTask(options: { configuration: RooCodeSettings, text?: string, images?: string[], newTab?: boolean }): Promise<string>`: Starts a new Roocode task. Returns the `taskId` of the new task.
--   `resumeTask(taskId: string): Promise<void>`: Resumes a previously paused task.
--   `isTaskInHistory(taskId: string): Promise<boolean>`: Checks if a task exists in the history.
--   `getCurrentTaskStack()`: Returns the current stack of active tasks.
--   `clearCurrentTask(lastMessage?: string): Promise<void>`: Finishes the current sub-task.
--   `cancelCurrentTask(): Promise<void>`: Cancels the currently active task.
--   `cancelTask(taskId: string): Promise<void>`: Cancels a specific task by its ID.
-
-### User Interaction
-
--   `sendMessage(text?: string, images?: string[]): Promise<void>`: Sends a message to the current task.
+-   `sendMessage(message: string): Promise<void>`: Sends a message to the current task.
 -   `pressPrimaryButton(): Promise<void>`: Simulates a click on the primary button in the Roocode webview.
 -   `pressSecondaryButton(): Promise<void>`: Simulates a click on the secondary button in the Roocode webview.
-
-### State and Configuration
-
--   `isReady(): boolean`: Returns `true` if the Roocode sidebar view has been launched.
--   `getConfiguration(): RooCodeSettings`: Gets the current Roocode settings.
--   `setConfiguration(values: RooCodeSettings): Promise<void>`: Sets the Roocode settings.
--   `getProfiles(): string[]`: Gets the names of all available configuration profiles.
--   `getProfileEntry(name: string): ProviderSettingsEntry | undefined`: Gets the details of a specific profile.
--   `createProfile(name: string, profile?: ProviderSettings, activate?: boolean): Promise<string>`: Creates a new configuration profile.
--   `updateProfile(name: string, profile: ProviderSettings, activate?: boolean): Promise<string | undefined>`: Updates an existing profile.
--   `upsertProfile(name: string, profile: ProviderSettings, activate?: boolean): Promise<string | undefined>`: Creates a profile or updates it if it already exists.
--   `deleteProfile(name: string): Promise<void>`: Deletes a profile.
--   `getActiveProfile(): string | undefined`: Gets the name of the currently active profile.
--   `setActiveProfile(name: string): Promise<string | undefined>`: Sets the active profile.
 
 ## Events
 
@@ -96,10 +75,35 @@ rooApi.on('taskStarted', (taskId) => {
 -   `taskModeSwitched: (taskId: string, modeSlug: string)`: Fired when the mode of a task changes.
 -   `taskAskResponded: (taskId: string)`: Fired when a user responds to an `ask` message.
 
-### Analytics Events
+### Analytics & Tooling Events
 
 -   `taskToolFailed: (taskId: string, toolName: ToolName, error: string)`: Fired when a tool used by a task fails.
 -   `taskTokenUsageUpdated: (taskId: string, usage: TokenUsage)`: Provides real-time updates on the token usage of a task.
+
+## Tracking Tool Usage
+
+You can determine if, when, and what tools are being used by listening to specific API events.
+
+### Knowing *What* Tools Were Used (End of Task)
+
+You can get a complete summary of all tools used during a task by listening for the `taskCompleted` event. The payload of this event includes a `toolUsage` object that details the number of attempts and failures for each tool.
+
+```typescript
+rooApi.on('taskCompleted', (taskId, tokenUsage, toolUsage) => {
+    console.log(`Task ${taskId} completed. Tool Usage:`, toolUsage);
+    // Example toolUsage: { "read_file": { "attempts": 2, "failures": 0 } }
+});
+```
+
+### Knowing *When* a Tool Is Used (Real-time Failures)
+
+While there is no real-time event for successful tool executions, you can be notified immediately when a tool fails. The `taskToolFailed` event provides the name of the tool that failed and the corresponding error message.
+
+```typescript
+rooApi.on('taskToolFailed', (taskId, toolName, error) => {
+    console.error(`Task ${taskId}: Tool '${toolName}' failed with error: ${error}`);
+});
+```
 
 ## Data Structures
 
@@ -131,9 +135,9 @@ type ToolUsage = Record<ToolName, {
 }>;
 ```
 
-### `ToolName`
+### `ToolName` (Agent-Facing Tools)
 
-The following tool names are available:
+The following are tools the AI agent can request to use. Their usage is tracked in the `toolUsage` object of the `taskCompleted` event.
 
 -   `execute_command`
 -   `read_file`
@@ -156,6 +160,29 @@ The following tool names are available:
 -   `update_todo_list`
 -   `generate_image`
 
+### Informational "Say" Tools
+
+These are not tools the agent requests, but rather informational messages sent from the system to the UI to report that an action has occurred. Your tool-checking algorithm should look for the `tool` property within a `say` type `ClineMessage`.
+
+-   `editedExistingFile`: A file that already existed has been modified.
+-   `newFileCreated`: A new file has been created.
+-   `appliedDiff`: A diff was successfully applied to a file.
+-   `codebaseSearch`: A codebase search was performed.
+-   `readFile`: A file was read.
+-   `fetchInstructions`: Instructions were fetched.
+-   `listFilesTopLevel`: A top-level file listing was performed.
+-   `listFilesRecursive`: A recursive file listing was performed.
+-   `listCodeDefinitionNames`: Code definitions were listed.
+-   `searchFiles`: A file search was performed.
+-   `switchMode`: The mode was switched.
+-   `newTask`: A new task was created.
+-   `finishTask`: The task was finished.
+-   `searchAndReplace`: A search and replace operation was completed.
+-   `insertContent`: Content was inserted into a file.
+-   `generateImage`: An image generation process was initiated.
+-   `imageGenerated`: An image has been successfully generated.
+
+
 ### `ClineMessage`
 
 Represents a message in the Roocode chat.
@@ -172,37 +199,3 @@ interface ClineMessage {
     reasoning?: string;
     // ... and other properties
 }
-```
-
-#### `ClineAsk`
-
-A `ClineAsk` message is sent when the Roocode agent needs to **ask for permission or clarification** from the user before it can proceed. Here are the possible `ask` types:
-
-*   `followup`: The agent is asking a clarifying question to get more information.
-*   `command`: The agent is asking for permission to execute a terminal/shell command.
-*   `command_output`: The agent wants to read the output from a command it just ran.
-*   `completion_result`: The agent believes the task is finished and is waiting for user feedback.
-*   `tool`: The agent is asking for permission to use a file system tool (e.g., `read_file`, `write_to_file`).
-*   `api_req_failed`: An API request made by the agent failed, and it's asking whether to retry.
-*   `resume_task`: The agent needs confirmation to resume a task that was paused.
-*   `resume_completed_task`: The agent needs confirmation to resume a task that was already marked as completed.
-*   `mistake_limit_reached`: The agent has made too many errors and needs guidance from the user.
-*   `browser_action_launch`: The agent is asking for permission to launch or interact with a browser.
-*   `use_mcp_server`: The agent wants to use a tool from a connected MCP server.
-*   `auto_approval_max_req_reached`: The agent has reached its limit for automatically approved actions and now requires manual approval.
-
-#### `ClineSay`
-
-A `ClineSay` message is sent when the Roocode agent wants to **provide information** to the user. These are informational messages that don't require a direct response. Here are the possible `say` types:
-
-*   `error`: A general error message.
-*   `api_req_started`: Informs the user that an API request has been initiated.
-*   `api_req_finished`: Informs the user that an API request has completed.
-*   `text`: A general text message or response from the agent.
-*   `reasoning`: The agent's thought process or reasoning behind an action (this is often hidden but available for debugging).
-*   `completion_result`: The final result of a completed task.
-*   `user_feedback`: A message containing feedback provided by the user.
-*   `command_output`: The output from an executed command.
-*   `browser_action_result`: The result of an action performed in the browser.
-*   `subtask_result`: The result from a completed subtask.
-*   ...and several others for more specific situations like retries, warnings, and context changes.

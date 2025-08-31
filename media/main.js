@@ -14,98 +14,243 @@
     const petContainer = document.getElementById('pet-container');
     const character = document.getElementById('character');
 
-    const colors = {
-        architect: '#FFD700', // Gold
-        code: '#00BFFF',      // DeepSkyBlue
-        debug: '#FF4500',     // OrangeRed
-        ask: '#9370DB',       // MediumPurple
-        orchestrator: '#32CD32' // LimeGreen
+    const toolCategories = {
+        write: ['editedExistingFile', 'newFileCreated', 'appliedDiff', 'searchAndReplace', 'insertContent'],
+        read: ['codebaseSearch', 'readFile', 'fetchInstructions', 'listFilesTopLevel', 'listFilesRecursive', 'listCodeDefinitionNames', 'searchFiles', 'switchMode'],
+        execute: ['execute_command']
+    };
+    const animation_frame_rate = {
+        default: 200,
+        code: 100
+    };
+    const min_animation_duration = 5000; // milliseconds
+
+    const actionAnimations = {
+        code: ['action-code-1', 'action-code-2'],
+        orchestrator: ['action-orchestrator-1', 'action-orchestrator-2'],
+        architect: ['action-architect-1', 'action-architect-2', 'action-architect-3', 'action-architect-2'],
+        ask: ['action-ask-1', 'action-ask-2'],
+        debug: ['action-debug-1', 'action-debug-2']
     };
 
+    function getToolCategory(toolName) {
+        for (const category in toolCategories) {
+            if (toolCategories[category].includes(toolName)) {
+                return category;
+            }
+        }
+        return null;
+    }
+
     let isJumping = false;
+    let isActing = false;
+    let thinkingInterval;
+    let animationStartTime;
+    let isProtectedAction = false;
 
     function playJumpAnimation() {
-        if (character && !isJumping) {
-            isJumping = true;
-
-            // 1. Temporarily disable the idle animation
-            character.style.animation = 'none';
-
-            // 2. Force browser to apply the style change (reflow)
-            // @ts-ignore
-            void character.offsetHeight;
-
-            // 3. Now, start the jump animation
-            character.className = 'jump-1';
+        if (!character || isJumping || isActing) return;
+        isJumping = true;
+        character.style.animation = 'none';
+        // @ts-ignore
+        void character.offsetHeight;
+        character.className = 'jump-1';
+        setTimeout(() => {
+            if (!character) { isJumping = false; return; }
+            character.className = 'jump-2';
             setTimeout(() => {
-                // Frame 2
-                character.className = 'jump-2';
+                if (!character) { isJumping = false; return; }
+                character.className = 'jump-3';
                 setTimeout(() => {
-                    // Frame 3
-                    character.className = 'jump-3';
-                    setTimeout(() => {
-                        // Back to idle
-                        character.className = 'idle';
-                        // 4. Remove the inline style so the CSS animation can resume
-                        character.style.animation = '';
-                        isJumping = false;
-                    }, 300); // Duration of frame 3
-                }, 500); // Duration of frame 2
-            }, 600); // Duration of frame 1
+                    if (!character) { isJumping = false; return; }
+                    character.className = 'idle';
+                    character.style.animation = '';
+                    isJumping = false;
+                }, 300);
+            }, 500);
+        }, 600);
+    }
+
+    function playActionAnimation(animationMode) {
+        if (!character || isActing || isJumping) return;
+        const mode = animationMode || character.getAttribute('data-mode');
+        if (!mode || !actionAnimations[mode]) return;
+        isActing = true;
+        if (mode === 'code') {
+            isProtectedAction = true;
+        }
+        const frames = actionAnimations[mode];
+        let currentFrame = 0;
+        const frameRate = animation_frame_rate[mode] || animation_frame_rate.default;
+        
+        let animationInterval = setInterval(() => {
+            if (character) character.className = frames[currentFrame];
+            currentFrame = (currentFrame + 1) % frames.length;
+        }, frameRate);
+
+        setTimeout(() => {
+            clearInterval(animationInterval);
+            if (character) character.className = 'idle';
+            isActing = false;
+            isProtectedAction = false;
+        }, min_animation_duration);
+    }
+
+    function startThinkingAnimation() {
+        if (!character) return;
+        const mode = character.getAttribute('data-mode');
+        const thinkingModes = ['architect', 'orchestrator', 'debug'];
+        if (!mode || !thinkingModes.includes(mode) || isActing) return;
+
+        isActing = true;
+        animationStartTime = Date.now();
+        const frames = actionAnimations[mode];
+        let currentFrame = 0;
+        const frameRate = animation_frame_rate[mode] || animation_frame_rate.default;
+
+        thinkingInterval = setInterval(() => {
+            if (!character) {
+                stopThinkingAnimation();
+                return;
+            }
+            character.className = frames[currentFrame];
+            currentFrame = (currentFrame + 1) % frames.length;
+        }, frameRate);
+    }
+
+    function stopThinkingAnimation() {
+        if (isProtectedAction) return;
+        const elapsedTime = Date.now() - animationStartTime;
+        const remainingTime = min_animation_duration - elapsedTime;
+
+        const cleanup = () => {
+            if (thinkingInterval) {
+                clearInterval(thinkingInterval);
+                thinkingInterval = null;
+            }
+            if (isActing) {
+                logApiState('API request stopped');
+            }
+            isActing = false;
+            if (character) {
+                character.className = 'idle';
+            }
+        };
+
+        if(isActing){
+            if (remainingTime > 0) {
+                setTimeout(cleanup, remainingTime);
+            } else {
+                cleanup();
+            }
         }
     }
 
-    window.addEventListener('message', event => {
-        const message = event.data; // The json data that the extension sent
+    function logApiState(state) {
+        if (!chatContainer) return;
+        const logContainer = document.createElement('div');
+        logContainer.className = 'api-log-container';
+        logContainer.textContent = state;
+        chatContainer.appendChild(logContainer);
+    }
 
-        // Universal slug detection for all messages
+    window.addEventListener('message', event => {
+        const message = event.data;
+
         try {
-            // Correctly access the nested text field inside message.value
             if (message && message.value && message.value.message && typeof message.value.message.text === 'string') {
                 const nestedData = JSON.parse(message.value.message.text);
                 if (nestedData && typeof nestedData.request === 'string') {
                     const modeMatch = nestedData.request.match(/<slug>(.*?)<\/slug>/);
                     if (modeMatch && character) {
-                        const mode = modeMatch[1];
-                        character.setAttribute('data-mode', mode);
-                        character.className = 'idle';
+                        character.setAttribute('data-mode', modeMatch[1]);
                     }
                 }
             }
-        } catch (e) {
-            // This is expected if the field is not a JSON string.
-            // We can safely ignore these errors.
+        } catch (e) { /* Safely ignore */ }
+
+        if (message.type === 'taskModeSwitched' && character) {
+            character.setAttribute('data-mode', message.value.modeSlug);
+        }
+
+        const isApiReqStarted = message.type === 'message' && message.value && message.value.message && message.value.message.say === 'api_req_started';
+
+        if (isApiReqStarted) {
+            logApiState('API request started');
+            startThinkingAnimation();
+        } else {
+            stopThinkingAnimation();
         }
 
         if (chatContainer) {
+            if (!isApiReqStarted && message.type === 'message' && message.value && message.value.message) {
+                const rooMessage = message.value.message;
+                if (rooMessage.type === 'ask' && (rooMessage.ask === 'tool' || rooMessage.ask === 'command')) {
+                    let toolName = '';
+                    if (rooMessage.ask === 'command') {
+                        toolName = 'execute_command';
+                    } else if (rooMessage.ask === 'tool' && typeof rooMessage.text === 'string') {
+                        try {
+                            const toolData = JSON.parse(rooMessage.text);
+                            toolName = toolData ? toolData.tool : '';
+                        } catch (e) {
+                            console.error('Error parsing tool data:', e);
+                        }
+                    }
+
+                    if (toolName) {
+                        const category = getToolCategory(toolName);
+                        const mode = character ? character.getAttribute('data-mode') : null;
+                        const actionTriggers = { code: 'write', architect: 'read', debug: 'read', orchestrator: 'read', ask: 'read' };
+                        if (mode === 'debug' && category === 'write') {
+                            playActionAnimation('code');
+                        } else if (mode && actionTriggers[mode] === category) {
+                            playActionAnimation();
+                        }
+                        if (category) {
+                            const toolContainer = document.createElement('div');
+                            toolContainer.className = 'tool-call-container';
+                            toolContainer.textContent = `${category} tool was used`;
+                            chatContainer.appendChild(toolContainer);
+                        }
+                    }
+                }
+            }
+
             if (message.type === 'message') {
                 const messageContainer = document.createElement('div');
                 messageContainer.className = 'message-container';
-
                 const messageData = document.createElement('pre');
-                
-                if (typeof message.value === 'string') {
-                    messageData.textContent = message.value;
-                } else {
-                    messageData.textContent = JSON.stringify(message.value, null, 2);
-                }
-
+                messageData.textContent = typeof message.value === 'string' ? message.value : JSON.stringify(message.value, null, 2);
                 messageContainer.appendChild(messageData);
                 chatContainer.appendChild(messageContainer);
-
             } else if (message.type === 'taskModeSwitched') {
                 const modeContainer = document.createElement('div');
                 modeContainer.className = 'mode-container';
-
                 const modeData = document.createElement('p');
                 modeData.textContent = `Mode switched to ${message.value.modeSlug}`;
                 modeContainer.appendChild(modeData);
-
                 chatContainer.appendChild(modeContainer);
-                if (character) {
-                    character.setAttribute('data-mode', message.value.modeSlug);
-                    character.className = 'idle';
+                if (character && !isActing) character.className = 'idle';
+            } else if (message.type === 'taskCompleted') {
+                const { taskId, tokenUsage, toolUsage } = message.value;
+                const completedContainer = document.createElement('div');
+                completedContainer.className = 'message-container task-completed';
+                let content = `Task ${taskId} completed.\n\n`;
+                if (tokenUsage) {
+                    content += `Token Usage:\n  - In: ${tokenUsage.totalTokensIn}, Out: ${tokenUsage.totalTokensOut}, Cost: $${tokenUsage.totalCost.toFixed(6)}\n\n`;
                 }
+                if (toolUsage && Object.keys(toolUsage).length > 0) {
+                    content += 'Tool Usage:\n';
+                    for (const toolName in toolUsage) {
+                        const usage = toolUsage[toolName];
+                        content += `  - ${toolName}: Attempts: ${usage.attempts}, Failures: ${usage.failures}\n`;
+                    }
+                }
+                const messageData = document.createElement('pre');
+                messageData.textContent = content;
+                completedContainer.appendChild(messageData);
+                chatContainer.appendChild(completedContainer);
             }
         }
     });

@@ -11,7 +11,51 @@ export enum RooCodeEventName {
     TaskModeSwitched = "taskModeSwitched",
     TaskToolFailed = "taskToolFailed",
     TaskTokenUsageUpdated = "taskTokenUsageUpdated",
+    TaskFocused = "taskFocused",
+    TaskUnfocused = "taskUnfocused",
+    TaskActive = "taskActive",
+    TaskInteractive = "taskInteractive",
+    TaskResumable = "taskResumable",
+    TaskIdle = "taskIdle",
+    TaskAskResponded = "taskAskResponded"
 }
+
+export type ToolName =
+    | 'execute_command'
+    | 'read_file'
+    | 'write_to_file'
+    | 'apply_diff'
+    | 'insert_content'
+    | 'search_and_replace'
+    | 'search_files'
+    | 'list_files'
+    | 'list_code_definition_names'
+    | 'browser_action'
+    | 'use_mcp_tool'
+    | 'access_mcp_resource'
+    | 'ask_followup_question'
+    | 'attempt_completion'
+    | 'switch_mode'
+    | 'new_task'
+    | 'fetch_instructions'
+    | 'codebase_search'
+    | 'update_todo_list'
+    | 'generate_image';
+
+
+export interface TokenUsage {
+    totalTokensIn: number;
+    totalTokensOut: number;
+    totalCacheWrites?: number;
+    totalCacheReads?: number;
+    totalCost: number;
+    contextTokens: number;
+}
+
+export type ToolUsage = Record<string, {
+    attempts: number;
+    failures: number;
+}>;
 
 export interface RooCodeSettings {} // Empty for now, as we don't need to configure it
 

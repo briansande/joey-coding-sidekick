@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { RooCodeAPI, RooCodeEventName } from './types';
+import { RooCodeAPI, RooCodeEventName, TokenUsage, ToolUsage } from './types';
 import { SidebarProvider } from '../SidebarProvider';
 
 let rooApi: RooCodeAPI | undefined;
@@ -33,7 +33,10 @@ export async function initializeRooAPI(): Promise<RooCodeAPI | undefined> {
 export function setupRooEventListeners(api: RooCodeAPI, sidebarProvider: SidebarProvider) {
     // Listen for all events from Roocode
     Object.values(RooCodeEventName)
-        .filter(e => e !== RooCodeEventName.TaskModeSwitched)
+        .filter(e => ![
+            RooCodeEventName.TaskModeSwitched,
+            RooCodeEventName.TaskCompleted
+        ].includes(e))
         .forEach(eventName => {
             api.on(eventName, (data: any) => {
                 console.log(`Received Roocode event: ${eventName}`, data);
@@ -47,6 +50,15 @@ export function setupRooEventListeners(api: RooCodeAPI, sidebarProvider: Sidebar
         sidebarProvider.postMessageToWebview({
             type: RooCodeEventName.TaskModeSwitched,
             value: { taskId, modeSlug }
+        });
+    });
+
+    // Handle taskCompleted separately to include token and tool usage
+    api.on(RooCodeEventName.TaskCompleted, (taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage) => {
+        console.log(`Received Roocode event: ${RooCodeEventName.TaskCompleted}`, { taskId, tokenUsage, toolUsage });
+        sidebarProvider.postMessageToWebview({
+            type: RooCodeEventName.TaskCompleted,
+            value: { taskId, tokenUsage, toolUsage }
         });
     });
 }

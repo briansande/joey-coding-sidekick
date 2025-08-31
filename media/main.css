@@ -107,3 +107,33 @@ html {
     margin: 10px 0;
     background-color: var(--vscode-button-secondaryBackground);
 }
+.tool-call-container {
+    border: 1px solid var(--vscode-editorWidget-border);
+    padding: 10px;
+    margin: 10px 0;
+    background-color: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-button-foreground);
+    text-align: center;
+    font-family: var(--vscode-font-family);
+}
+
+.tool-name {
+    font-weight: bold;
+}
+/* Action animations */
+#character.action-code-1 { background-position: -256px 0px; }
+#character.action-code-2 { background-position: -512px 0px; }
+
+
+#character.action-orchestrator-1 { background-position: 0px -256px; }
+#character.action-orchestrator-2 { background-position: -256px -256px; }
+
+#character.action-architect-1 { background-position: 0px -512px; }
+#character.action-architect-2 { background-position: -256px -512px; }
+#character.action-architect-3 { background-position: -512px -512px; }
+
+#character.action-ask-1 { background-position: 0px -1280px; }
+#character.action-ask-2 { background-position: -256px -1280px; }
+
+#character.action-debug-1 { background-position: 0px -1536px; }
+#character.action-debug-2 { background-position: -256px -1536px; }

@@ -130,8 +130,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 <div id="pet-container">
                     <div id="character-wrapper">
                         <div id="character" class="idle"></div>
-                        <div id="awards-container"></div>
                     </div>
+                    <div id="awards-container"></div>
                 </div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>

@@ -3,7 +3,7 @@ export interface Achievement {
     name: string;
     description: string;
     unlocked: boolean;
-    svg: string;
+    svg: string; // Correctly typed as string, will now hold .svg.png paths
     check: (stats: Record<string, number>) => boolean;
 }
 
@@ -13,7 +13,7 @@ export const achievements: Achievement[] = [
         name: 'Code Novice',
         description: 'Switch to Code mode 10 times.',
         unlocked: false,
-        svg: 'media/achievements/code_10.svg',
+        svg: 'media/achievements/code_10.svg.png',
         check: (stats) => (stats['code'] || 0) >= 10,
     },
     {
@@ -21,7 +21,7 @@ export const achievements: Achievement[] = [
         name: 'Architect Novice',
         description: 'Switch to Architect mode 10 times.',
         unlocked: false,
-        svg: 'media/achievements/architect_10.svg',
+        svg: 'media/achievements/architect_10.svg.png',
         check: (stats) => (stats['architect'] || 0) >= 10,
     },
     {
@@ -29,7 +29,7 @@ export const achievements: Achievement[] = [
         name: 'Ask Novice',
         description: 'Switch to Ask mode 10 times.',
         unlocked: false,
-        svg: 'media/achievements/ask_10.svg',
+        svg: 'media/achievements/ask_10.svg.png',
         check: (stats) => (stats['ask'] || 0) >= 10,
     },
     {
@@ -37,7 +37,7 @@ export const achievements: Achievement[] = [
         name: 'Debug Novice',
         description: 'Switch to Debug mode 10 times.',
         unlocked: false,
-        svg: 'media/achievements/debug_10.svg',
+        svg: 'media/achievements/debug_10.svg.png',
         check: (stats) => (stats['debug'] || 0) >= 10,
     },
     {
@@ -45,7 +45,7 @@ export const achievements: Achievement[] = [
         name: 'Orchestrator Novice',
         description: 'Switch to Orchestrator mode 10 times.',
         unlocked: false,
-        svg: 'media/achievements/orchestrator_10.svg',
+        svg: 'media/achievements/orchestrator_10.svg.png',
         check: (stats) => (stats['orchestrator'] || 0) >= 10,
     },
     {
@@ -53,7 +53,7 @@ export const achievements: Achievement[] = [
         name: 'Token User',
         description: 'Use 1,000,000 tokens.',
         unlocked: false,
-        svg: 'media/achievements/tokens_1.svg',
+        svg: 'media/achievements/tokens_1.svg.png',
         check: (stats) => (stats['totalTokens'] || 0) >= 1000000,
     },
     {
@@ -61,7 +61,7 @@ export const achievements: Achievement[] = [
         name: 'Token Enthusiast',
         description: 'Use 10,000,000 tokens.',
         unlocked: false,
-        svg: 'media/achievements/tokens_2.svg',
+        svg: 'media/achievements/tokens_2.svg.png',
         check: (stats) => (stats['totalTokens'] || 0) >= 10000000,
     },
     {
@@ -69,7 +69,7 @@ export const achievements: Achievement[] = [
         name: 'Token Advocate',
         description: 'Use 100,000,000 tokens.',
         unlocked: false,
-        svg: 'media/achievements/tokens_3.svg',
+        svg: 'media/achievements/tokens_3.svg.png',
         check: (stats) => (stats['totalTokens'] || 0) >= 100000000,
     },
     {
@@ -77,7 +77,7 @@ export const achievements: Achievement[] = [
         name: 'Token Visionary',
         description: 'Use 1,000,000,000 tokens.',
         unlocked: false,
-        svg: 'media/achievements/tokens_4.svg',
+        svg: 'media/achievements/tokens_4.svg.png',
         check: (stats) => (stats['totalTokens'] || 0) >= 1000000000,
     },
     {
@@ -85,7 +85,7 @@ export const achievements: Achievement[] = [
         name: 'Token Billionaire',
         description: 'Use 10,000,000,000 tokens.',
         unlocked: false,
-        svg: 'media/achievements/tokens_5.svg',
+        svg: 'media/achievements/tokens_5.svg.png',
         check: (stats) => (stats['totalTokens'] || 0) >= 10000000000,
     },
     // Task-Based Achievements
@@ -94,7 +94,7 @@ export const achievements: Achievement[] = [
         name: 'Task Novice',
         description: 'Complete 1 task.',
         unlocked: false,
-        svg: 'media/achievements/task_1.svg',
+        svg: 'media/achievements/task_1.svg.png',
         check: (stats) => (stats['tasksCompleted'] || 0) >= 1,
     },
     {
@@ -102,7 +102,7 @@ export const achievements: Achievement[] = [
         name: 'Task Pro',
         description: 'Complete 10 tasks.',
         unlocked: false,
-        svg: 'media/achievements/task_10.svg',
+        svg: 'media/achievements/task_10.svg.png',
         check: (stats) => (stats['tasksCompleted'] || 0) >= 10,
     },
     {
@@ -110,7 +110,7 @@ export const achievements: Achievement[] = [
         name: 'Task Master',
         description: 'Complete 100 tasks.',
         unlocked: false,
-        svg: 'media/achievements/task_100.svg',
+        svg: 'media/achievements/task_100.svg.png',
         check: (stats) => (stats['tasksCompleted'] || 0) >= 100,
     },
 
@@ -120,7 +120,7 @@ export const achievements: Achievement[] = [
         name: 'Bunny Hopper',
         description: 'Jump 10 times.',
         unlocked: false,
-        svg: 'media/achievements/jump_10.svg',
+        svg: 'media/achievements/jump_10.svg.png',
         check: (stats) => (stats['jumps'] || 0) >= 10,
     },
     {
@@ -128,7 +128,7 @@ export const achievements: Achievement[] = [
         name: 'Pogo Pro',
         description: 'Jump 100 times.',
         unlocked: false,
-        svg: 'media/achievements/jump_100.svg',
+        svg: 'media/achievements/jump_100.svg.png',
         check: (stats) => (stats['jumps'] || 0) >= 100,
     },
     {
@@ -136,7 +136,7 @@ export const achievements: Achievement[] = [
         name: 'Space Jumper',
         description: 'Jump 1000 times.',
         unlocked: false,
-        svg: 'media/achievements/jump_1000.svg',
+        svg: 'media/achievements/jump_1000.svg.png',
         check: (stats) => (stats['jumps'] || 0) >= 1000,
     },
 
@@ -146,7 +146,7 @@ export const achievements: Achievement[] = [
         name: 'Tool Dabbler',
         description: 'Use 5 different tools.',
         unlocked: false,
-        svg: 'media/achievements/tool_dabbler.svg',
+        svg: 'media/achievements/tool_dabbler.svg.png',
         check: (stats) => Object.keys(stats).filter(k => k.startsWith('tool_')).length >= 5,
     },
     {
@@ -154,7 +154,7 @@ export const achievements: Achievement[] = [
         name: 'Tool Master',
         description: 'Use every available tool at least once.',
         unlocked: false,
-        svg: 'media/achievements/tool_master.svg',
+        svg: 'media/achievements/tool_master.svg.png',
         check: (stats) => {
             const usedTools = Object.keys(stats).filter(k => k.startsWith('tool_')).map(k => k.replace('tool_', ''));
             const allTools = [
@@ -172,7 +172,7 @@ export const achievements: Achievement[] = [
         name: 'The Creator',
         description: 'Use write_to_file to create a new file.',
         unlocked: false,
-        svg: 'media/achievements/creator.svg',
+        svg: 'media/achievements/creator.svg.png',
         check: (stats) => (stats['tool_write_to_file'] || 0) >= 1,
     },
     {
@@ -180,7 +180,7 @@ export const achievements: Achievement[] = [
         name: 'The Explorer',
         description: 'Use list_files or search_files.',
         unlocked: false,
-        svg: 'media/achievements/explorer.svg',
+        svg: 'media/achievements/explorer.svg.png',
         check: (stats) => (stats['tool_list_files'] || 0) >= 1 || (stats['tool_search_files'] || 0) >= 1,
     },
     {
@@ -188,7 +188,7 @@ export const achievements: Achievement[] = [
         name: 'The Commander',
         description: 'Use execute_command.',
         unlocked: false,
-        svg: 'media/achievements/commander.svg',
+        svg: 'media/achievements/commander.svg.png',
         check: (stats) => (stats['tool_execute_command'] || 0) >= 1,
     },
 
@@ -198,7 +198,7 @@ export const achievements: Achievement[] = [
         name: 'Polyglot',
         description: 'Use all available modes.',
         unlocked: false,
-        svg: 'media/achievements/polyglot.svg',
+        svg: 'media/achievements/polyglot.svg.png',
         check: (stats) => {
             const usedModes = Object.keys(stats).filter(k => !k.startsWith('tool_') && k !== 'totalTokens' && k !== 'tasksCompleted');
             const allModes = ['code', 'architect', 'ask', 'debug', 'orchestrator'];

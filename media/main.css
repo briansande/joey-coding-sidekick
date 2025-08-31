@@ -35,6 +35,7 @@ html {
     align-items: flex-end;
     border-top: 1px solid var(--vscode-editorWidget-border);
     background-color: transparent;
+    padding-bottom: 84px;
 }
 
 #character-wrapper {
@@ -189,6 +190,7 @@ html {
     left: 50%;
     transform: translateX(-50%);
     display: flex;
+    justify-content: center;
     gap: 8px;
     padding-bottom: 20px;
 }

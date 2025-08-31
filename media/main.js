@@ -70,7 +70,7 @@
         }
         const awardsContainer = document.getElementById('awards-container');
         if (awardsContainer) {
-            awardsContainer.style.transform = `scale(${scale}) translateX(-50%)`;
+            awardsContainer.style.transform = `scale(${scale})`;
         }
     }
 

@@ -1,71 +1,49 @@
-# joey-coding-sidekick README
+# Joey Coding Sidekick
 
-This is the README for your extension "joey-coding-sidekick". After writing up a brief description, we recommend including the following sections.
+A friendly coding sidekick for Visual Studio Code to keep you company while you work. Joey is an interactive pet that reacts to your coding activity, tracks your stats, and awards achievements.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+*   **Interactive Pet:** A virtual pet that lives in your VS Code sidebar.
+*   **Activity Tracking:** Joey gets bored when you're inactive and reacts when you're coding.
+*   **Stats and Achievements:** Tracks your coding statistics and unlocks achievements based on your activity.
+*   **Customizable:** Flip Joey's orientation and toggle achievement visibility.
 
-For example if there is an image subfolder under your extension project workspace:
+## Installation
 
-\!\[feature X\]\(images/feature-x.png\)
+1.  Open **Visual Studio Code**.
+2.  Go to the **Extensions** view (`Ctrl+Shift+X`).
+3.  Search for `joey-coding-sidekick`.
+4.  Click **Install**.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## Commands
 
-## Requirements
+You can access the following commands from the Command Palette (`Ctrl+Shift+P`):
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+*   `JOEY: Start New Roocode Task`: Starts a new task with Roocode.
+*   `JOEY: Reset Stats`: Resets your coding statistics.
+*   `JOEY: Flip Joey`: Flips Joey horizontally.
+*   `JOEY: Show Stats`: Displays your current stats.
+*   `JOEY: Clear Achievements`: Clears all your earned achievements.
+*   `JOEY: Toggle Achievements`: Shows or hides achievement notifications.
 
-## Extension Settings
+## Configuration
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+You can configure the extension through the VS Code settings (`Ctrl+,`):
 
-For example:
+*   `joey-sidekick.flipped`: Set to `true` to flip Joey horizontally. (Default: `false`)
+*   `joey-sidekick.debugMenu`: Set to `true` to show the debug menu in the sidebar. (Default: `false`)
+*   `joey-sidekick.showAchievements`: Set to `false` to hide achievement notifications. (Default: `true`)
 
-This extension contributes the following settings:
+## Development
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+To get started with development:
 
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+1.  Clone the repository.
+2.  Run `npm install` to install dependencies.
+3.  Run `npm run watch` to compile and watch for changes.
+4.  Press `F5` to open a new VS Code window with the extension loaded.
 
 ---
 
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Made with ❤️ by the Roo Veterinary Inc. team.

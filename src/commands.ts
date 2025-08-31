@@ -29,7 +29,7 @@ export function registerCommands(context: vscode.ExtensionContext, statsManager:
         }
     });
 
-    const clearStatsDisposable = vscode.commands.registerCommand('joey.clearStats', () => {
+    const clearStatsDisposable = vscode.commands.registerCommand('joey-sidekick.resetStats', () => {
         statsManager.clearStats();
         vscode.window.showInformationMessage('Joey\'s stats have been cleared.');
     });
@@ -40,5 +40,21 @@ export function registerCommands(context: vscode.ExtensionContext, statsManager:
         sidebarProvider.postMessageToWebview({ type: 'toggleStats', value: { stats, achievements } });
     });
 
-    context.subscriptions.push(startTaskDisposable, clearStatsDisposable, showStatsDisposable);
+    const clearAchievementsDisposable = vscode.commands.registerCommand('joey-sidekick.clearAchievements', () => {
+        achievementManager.clearAchievements();
+        const stats = statsManager.getStats();
+        const achievements = achievementManager.getAchievements();
+        sidebarProvider.postMessageToWebview({ type: 'toggleStats', value: { stats, achievements } });
+        vscode.window.showInformationMessage('All achievements have been cleared.');
+    });
+
+    const flipJoeyDisposable = vscode.commands.registerCommand('joey-sidekick.flipJoey', () => {
+        const config = vscode.workspace.getConfiguration('joey-sidekick');
+        const isFlipped = config.get('flipped', false);
+        config.update('flipped', !isFlipped, vscode.ConfigurationTarget.Global);
+        sidebarProvider.postMessageToWebview({ type: 'flipJoey', value: !isFlipped });
+    });
+
+    context.subscriptions.push(startTaskDisposable, clearStatsDisposable, showStatsDisposable, clearAchievementsDisposable, flipJoeyDisposable);
+    context.subscriptions.push(startTaskDisposable, clearStatsDisposable, showStatsDisposable, clearAchievementsDisposable);
 }

@@ -42,4 +42,8 @@ export class AchievementManager {
         const unlockedIds = this.achievements.filter(ach => ach.unlocked).map(ach => ach.id);
         this.context.globalState.update(AchievementManager.UNLOCKED_ACHIEVEMENTS_KEY, unlockedIds);
     }
+    public clearAchievements() {
+        this.achievements.forEach(ach => ach.unlocked = false);
+        this.context.globalState.update(AchievementManager.UNLOCKED_ACHIEVEMENTS_KEY, []);
+    }
 }

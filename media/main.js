@@ -212,6 +212,13 @@
             }
         }
 
+        if (message.type === 'flipJoey') {
+            
+            if (character) {
+                document.getElementById('character-wrapper')?.classList.toggle('flipped', message.value);
+            }
+        }
+
         if (message.type === 'achievementsUnlocked') {
             message.value.forEach(ach => {
                 const achievementNotification = document.createElement('div');
@@ -297,6 +304,27 @@
             statsAndAchievementsContainer.style.display = 'none';
         });
         statsAndAchievementsContainer.appendChild(closeButton);
+        const clearAchievementsButton = document.createElement('button');
+        clearAchievementsButton.textContent = 'Clear Achievements';
+        clearAchievementsButton.addEventListener('click', () => {
+            vscode.postMessage({ command: 'joey-sidekick.clearAchievements' });
+        });
+        statsAndAchievementsContainer.appendChild(clearAchievementsButton);
+        statsAndAchievementsContainer.appendChild(clearAchievementsButton);
+
+        const resetStatsButton = document.createElement('button');
+        resetStatsButton.textContent = 'Reset Stats';
+        resetStatsButton.addEventListener('click', () => {
+            vscode.postMessage({ command: 'joey-sidekick.resetStats' });
+        });
+        statsAndAchievementsContainer.appendChild(resetStatsButton);
+
+        const flipJoeyButton = document.createElement('button');
+        flipJoeyButton.textContent = 'Flip Joey';
+        flipJoeyButton.addEventListener('click', () => {
+            vscode.postMessage({ command: 'joey-sidekick.flipJoey' });
+        });
+        statsAndAchievementsContainer.appendChild(flipJoeyButton);
     }
 
     // Initial state

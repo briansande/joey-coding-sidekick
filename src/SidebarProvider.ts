@@ -26,6 +26,19 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         };
 
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+        webviewView.onDidDispose(() => {
+            this._view = undefined;
+        });
+
+        webviewView.webview.onDidReceiveMessage(async (data) => {
+            if (data.command) {
+                await vscode.commands.executeCommand(data.command);
+            }
+        });
+
+        const config = vscode.workspace.getConfiguration('joey-sidekick');
+        const isFlipped = config.get('flipped', false);
+        this.postMessageToWebview({ type: 'flipJoey', value: isFlipped });
     }
     public postMessageToWebview(message: { type: string, value: any }) {
         if (this._view) {
@@ -84,7 +97,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     <div id="achievements-container"></div>
                 </div>
                 <div id="pet-container">
-                    <div id="character" class="idle"></div>
+                    <div id="character-wrapper">
+                        <div id="character" class="idle"></div>
+                    </div>
                 </div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>

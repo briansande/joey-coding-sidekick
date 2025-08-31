@@ -17,6 +17,16 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Joey Sidekick",
+      "properties": {
+        "joey-sidekick.flipped": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether Joey is flipped horizontally."
+        }
+      }
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -45,6 +55,14 @@
         "command": "joey.showStats",
         "title": "Joey: Show Stats",
         "icon": "$(gear)"
+      },
+      {
+        "command": "joey-sidekick.resetStats",
+        "title": "Joey: Reset Stats"
+      },
+      {
+        "command": "joey-sidekick.flipJoey",
+        "title": "Joey: Flip Joey"
       }
     ],
     "menus": {

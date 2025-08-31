@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
+import { getRooApi } from './roocode/api';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'joey.sidebar';
 
     private _view?: vscode.WebviewView;
+    private _currentMode: string = 'code'; // Default to 'code'
 
     constructor(private readonly _extensionUri: vscode.Uri) {}
 
@@ -31,6 +33,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         }
     }
 
+    public setCurrentMode(mode: string) {
+        this._currentMode = mode;
+    }
+
     private _getHtmlForWebview(webview: vscode.Webview) {
         // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
         const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js'));
@@ -43,6 +49,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
         // Use a nonce to only allow specific scripts to be run
         const nonce = getNonce();
+        const currentMode = this._currentMode;
 
         return `<!DOCTYPE html>
 			<html lang="en">

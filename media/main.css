@@ -51,10 +51,27 @@ html {
     animation: bounce 2s infinite;
     transform-origin: bottom;
 }
-
-#character.talking {
-    background-position: -256px 0;
+#character.idle[data-mode="architect"] {
+    background-position: -512px -512px;
 }
+
+#character.idle[data-mode="code"] {
+    background-position: 0 0;
+}
+
+#character.idle[data-mode="ask"] {
+    background-position: 0 -1280px;
+}
+
+#character.idle[data-mode="debug"] {
+    background-position: 0 -1536px;
+}
+
+#character.idle[data-mode="orchestrator"] {
+    background-position: 0 -256px;
+}
+
+
 
 #character.jump-1 {
     background-position: -0px -1024px;

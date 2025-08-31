@@ -22,12 +22,6 @@
         orchestrator: '#32CD32' // LimeGreen
     };
 
-    let talkState = 0;
-    let talkInterval;
-    let talkTimeout;
-
-    let jumpAnimationTimeout;
-    let periodicJumpInterval;
     let isJumping = false;
 
     function playJumpAnimation() {
@@ -61,56 +55,27 @@
         }
     }
 
-    function startPeriodicJump() {
-        if (periodicJumpInterval) {
-            clearInterval(periodicJumpInterval);
-        }
-        periodicJumpInterval = setInterval(playJumpAnimation, 3000);
-    }
-
-    function stopPeriodicJump() {
-        if (periodicJumpInterval) {
-            clearInterval(periodicJumpInterval);
-            periodicJumpInterval = null;
-        }
-        if (jumpAnimationTimeout) {
-            clearTimeout(jumpAnimationTimeout);
-        }
-    }
-
-    function startTalking() {
-        stopPeriodicJump();
-        if (talkInterval) {
-            clearInterval(talkInterval);
-        }
-        if (talkTimeout) {
-            clearTimeout(talkTimeout);
-        }
-
-        talkInterval = setInterval(() => {
-            if (character) {
-                talkState = 1 - talkState;
-                character.className = talkState === 1 ? 'talking' : 'idle';
-            }
-        }, 100);
-
-        talkTimeout = setTimeout(stopTalking, 2000);
-    }
-
-    function stopTalking() {
-        if (talkInterval) {
-            clearInterval(talkInterval);
-            talkInterval = null;
-        }
-        if (character) {
-            character.className = 'idle';
-        }
-        talkState = 0;
-        startPeriodicJump();
-    }
-
     window.addEventListener('message', event => {
         const message = event.data; // The json data that the extension sent
+
+        // Universal slug detection for all messages
+        try {
+            // Correctly access the nested text field inside message.value
+            if (message && message.value && message.value.message && typeof message.value.message.text === 'string') {
+                const nestedData = JSON.parse(message.value.message.text);
+                if (nestedData && typeof nestedData.request === 'string') {
+                    const modeMatch = nestedData.request.match(/<slug>(.*?)<\/slug>/);
+                    if (modeMatch && character) {
+                        const mode = modeMatch[1];
+                        character.setAttribute('data-mode', mode);
+                        character.className = 'idle';
+                    }
+                }
+            }
+        } catch (e) {
+            // This is expected if the field is not a JSON string.
+            // We can safely ignore these errors.
+        }
 
         if (chatContainer) {
             if (message.type === 'message') {
@@ -118,7 +83,7 @@
                 messageContainer.className = 'message-container';
 
                 const messageData = document.createElement('pre');
-
+                
                 if (typeof message.value === 'string') {
                     messageData.textContent = message.value;
                 } else {
@@ -126,9 +91,8 @@
                 }
 
                 messageContainer.appendChild(messageData);
-
                 chatContainer.appendChild(messageContainer);
-                startTalking();
+
             } else if (message.type === 'taskModeSwitched') {
                 const modeContainer = document.createElement('div');
                 modeContainer.className = 'mode-container';
@@ -138,6 +102,10 @@
                 modeContainer.appendChild(modeData);
 
                 chatContainer.appendChild(modeContainer);
+                if (character) {
+                    character.setAttribute('data-mode', message.value.modeSlug);
+                    character.className = 'idle';
+                }
             }
         }
     });
@@ -145,6 +113,6 @@
     // Initial state
     if (character) {
         character.className = 'idle';
+        character.addEventListener('click', playJumpAnimation);
     }
-    startPeriodicJump();
 }());

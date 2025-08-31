@@ -44,6 +44,3 @@ To get started with development:
 3.  Run `npm run watch` to compile and watch for changes.
 4.  Press `F5` to open a new VS Code window with the extension loaded.
 
----
-
-Made with ❤️ by the Roo Veterinary Inc. team.

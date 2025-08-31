@@ -33,6 +33,9 @@ export class AchievementManager {
 
         if (newlyUnlocked.length > 0) {
             this.saveUnlockedAchievements();
+            newlyUnlocked.forEach(ach => {
+                vscode.window.showInformationMessage(`Achievement Unlocked: ${ach.name}!`);
+            });
         }
 
         return newlyUnlocked;

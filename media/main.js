@@ -60,17 +60,17 @@
         const containerHeight = petContainer.offsetHeight;
 
         const scaleX = containerWidth / 256;
-        const scaleY = containerHeight / 256;
+        const scaleY = containerHeight / 340; // 256 for character + 84 for awards
 
-        const scale = Math.min(scaleX, scaleY);
+        const scale = Math.min(scaleX, scaleY, 1);
 
+        const joeyAndAwardsWrapper = document.getElementById('joey-and-awards-wrapper');
+        if (joeyAndAwardsWrapper) {
+            joeyAndAwardsWrapper.style.transform = `scale(${scale})`;
+        }
         const characterWrapper = document.getElementById('character-wrapper');
         if (characterWrapper) {
-            characterWrapper.style.transform = `scale(${scale}) ${isFlipped ? 'scaleX(-1)' : ''}`;
-        }
-        const awardsContainer = document.getElementById('awards-container');
-        if (awardsContainer) {
-            awardsContainer.style.transform = `scale(${scale})`;
+            characterWrapper.style.transform = isFlipped ? 'scaleX(-1)' : '';
         }
     }
 
@@ -243,11 +243,20 @@
         awardsContainer.innerHTML = '';
         unlockedAchievements.forEach(ach => {
             if (ach.unlocked) {
+                const awardContainer = document.createElement('div');
+                awardContainer.className = 'award-container';
+
                 const awardImg = document.createElement('img');
                 awardImg.src = ach.svg;
                 awardImg.className = 'award';
-                awardImg.title = `${ach.name} - ${ach.description}`;
-                awardsContainer.appendChild(awardImg);
+                awardContainer.appendChild(awardImg);
+
+                const tooltip = document.createElement('span');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = ach.name;
+                awardContainer.appendChild(tooltip);
+
+                awardsContainer.appendChild(awardContainer);
             }
         });
     }

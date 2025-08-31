@@ -24,6 +24,16 @@
           "type": "boolean",
           "default": false,
           "description": "Whether Joey is flipped horizontally."
+        },
+        "joey-sidekick.debugMenu": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show the debug menu in the sidebar."
+        },
+        "joey-sidekick.showAchievements": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show achievement awards on the pet container."
         }
       }
     },
@@ -52,17 +62,25 @@
         "title": "Joey: Start New Roocode Task"
       },
       {
-        "command": "joey.showStats",
-        "title": "Joey: Show Stats",
-        "icon": "$(gear)"
-      },
-      {
         "command": "joey-sidekick.resetStats",
         "title": "Joey: Reset Stats"
       },
       {
         "command": "joey-sidekick.flipJoey",
         "title": "Joey: Flip Joey"
+      },
+      {
+        "command": "joey.showStats",
+        "title": "Joey: Show Stats",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "joey-sidekick.clearAchievements",
+        "title": "Joey: Clear Achievements"
+      },
+      {
+        "command": "joey-sidekick.toggleAchievements",
+        "title": "Joey: Toggle Achievements"
       }
     ],
     "menus": {

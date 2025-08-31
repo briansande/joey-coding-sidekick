@@ -11,9 +11,9 @@ export async function activate(context: vscode.ExtensionContext) {
     const api = await initializeRooAPI();
 
     if (api) {
-        const statsManager = new StatsManager(context);
         const achievementManager = new AchievementManager(context);
-        const sidebarProvider = new SidebarProvider(context.extensionUri);
+        const sidebarProvider = new SidebarProvider(context.extensionUri, achievementManager);
+        const statsManager = new StatsManager(context, sidebarProvider, achievementManager);
         setupRooEventListeners(api, sidebarProvider, statsManager, achievementManager);
         
         context.subscriptions.push(
@@ -23,7 +23,36 @@ export async function activate(context: vscode.ExtensionContext) {
             )
         );
 
-        registerCommands(context, statsManager, sidebarProvider);
+        registerCommands(context, sidebarProvider);
+        
+        let inactivityTimeout: NodeJS.Timeout;
+        let boredInterval: NodeJS.Timeout | undefined;
+        const boredIntervalTime = 10000; // 10 seconds
+
+        function startBoredInterval() {
+            if (!boredInterval) {
+                boredInterval = setInterval(() => {
+                    sidebarProvider.postMessageToWebview({ type: 'joeyIsBored', value: null });
+                }, boredIntervalTime);
+            }
+        }
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimeout);
+            if (boredInterval) {
+                clearInterval(boredInterval);
+                boredInterval = undefined;
+            }
+            inactivityTimeout = setTimeout(() => {
+                sidebarProvider.postMessageToWebview({ type: 'joeyIsBored', value: null });
+                startBoredInterval();
+            }, boredIntervalTime);
+        }
+
+        vscode.workspace.onDidChangeTextDocument(() => resetInactivityTimer());
+        vscode.window.onDidChangeActiveTextEditor(() => resetInactivityTimer());
+
+        resetInactivityTimer();
     }
 }
 

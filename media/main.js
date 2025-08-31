@@ -16,15 +16,7 @@
     const statsContainer = document.getElementById('stats-container');
     const achievementsContainer = document.getElementById('achievements-container');
     const statsAndAchievementsContainer = document.getElementById('stats-and-achievements-container');
-    const debugWindowButton = document.getElementById('debug-window-button');
     const messageContainerWrapper = document.getElementById('message-container-wrapper');
-
-    if (debugWindowButton && messageContainerWrapper) {
-        debugWindowButton.addEventListener('click', () => {
-            const isVisible = messageContainerWrapper.style.display === 'block';
-            messageContainerWrapper.style.display = isVisible ? 'none' : 'block';
-        });
-    }
 
     const toolCategories = {
         write: ['editedExistingFile', 'newFileCreated', 'appliedDiff', 'searchAndReplace', 'insertContent'],
@@ -59,9 +51,35 @@
     let thinkingInterval;
     let animationStartTime;
     let isProtectedAction = false;
+    let isFlipped = false;
+
+    function resizeJoey() {
+        if (!petContainer || !character) return;
+
+        const containerWidth = petContainer.offsetWidth;
+        const containerHeight = petContainer.offsetHeight;
+
+        const scaleX = containerWidth / 256;
+        const scaleY = containerHeight / 256;
+
+        const scale = Math.min(scaleX, scaleY);
+
+        const characterWrapper = document.getElementById('character-wrapper');
+        if (characterWrapper) {
+            characterWrapper.style.transform = `scale(${scale}) ${isFlipped ? 'scaleX(-1)' : ''}`;
+        }
+        const awardsContainer = document.getElementById('awards-container');
+        if (awardsContainer) {
+            awardsContainer.style.transform = `scale(${scale}) translateX(-50%)`;
+        }
+    }
+
+    window.addEventListener('load', resizeJoey);
+    window.addEventListener('resize', resizeJoey);
 
     function playJumpAnimation() {
         if (!character || isJumping || isActing) return;
+        vscode.postMessage({ command: 'incrementJumpCount' });
         isJumping = true;
         character.style.animation = 'none';
         // @ts-ignore
@@ -94,7 +112,7 @@
         const frames = actionAnimations[mode];
         let currentFrame = 0;
         const frameRate = animation_frame_rate[mode] || animation_frame_rate.default;
-        
+
         let animationInterval = setInterval(() => {
             if (character) character.className = frames[currentFrame];
             currentFrame = (currentFrame + 1) % frames.length;
@@ -106,6 +124,33 @@
             isActing = false;
             isProtectedAction = false;
         }, min_animation_duration);
+    }
+
+    function playBoredAnimation() {
+        if (!character || isActing || isJumping) return;
+        isActing = true;
+
+        const frames = ['bored-1', 'bored-2', 'bored-3', 'bored-2'];
+        let frameIndex = 0;
+        let repeatCount = 0;
+
+        const animationInterval = setInterval(() => {
+            if (character) {
+                character.className = frames[frameIndex];
+            }
+            frameIndex++;
+            if (frameIndex >= frames.length) {
+                frameIndex = 0;
+                repeatCount++;
+                if (repeatCount >= 3) {
+                    clearInterval(animationInterval);
+                    if (character) {
+                        character.className = 'idle';
+                    }
+                    isActing = false;
+                }
+            }
+        }, 300);
     }
 
     function startThinkingAnimation() {
@@ -149,7 +194,7 @@
             }
         };
 
-        if(isActing){
+        if (isActing) {
             if (remainingTime > 0) {
                 setTimeout(cleanup, remainingTime);
             } else {
@@ -191,9 +236,28 @@
         });
         achievementsContainer.appendChild(achievementsList);
     }
+    function displayAwards(unlockedAchievements) {
+        const awardsContainer = document.getElementById('awards-container');
+        if (!awardsContainer) return;
+
+        awardsContainer.innerHTML = '';
+        unlockedAchievements.forEach(ach => {
+            if (ach.unlocked) {
+                const awardImg = document.createElement('img');
+                awardImg.src = ach.svg;
+                awardImg.className = 'award';
+                awardImg.title = `${ach.name} - ${ach.description}`;
+                awardsContainer.appendChild(awardImg);
+            }
+        });
+    }
 
     window.addEventListener('message', event => {
         const message = event.data;
+
+        if (message.type === 'joeyIsBored') {
+            playBoredAnimation();
+        }
 
         if (message.type === 'updateStats') {
             updateStats(message.value);
@@ -201,6 +265,7 @@
 
         if (message.type === 'updateAchievements') {
             updateAchievements(message.value);
+            displayAwards(message.value);
         }
 
         if (message.type === 'toggleStats') {
@@ -212,11 +277,22 @@
             }
         }
 
-        if (message.type === 'flipJoey') {
-            
-            if (character) {
-                document.getElementById('character-wrapper')?.classList.toggle('flipped', message.value);
+        if (message.type === 'setDebugMenuVisibility') {
+            if (statsAndAchievementsContainer) {
+                statsAndAchievementsContainer.style.display = message.value ? 'block' : 'none';
             }
+        }
+
+        if (message.type === 'setAchievementsVisibility') {
+            const awardsContainer = document.getElementById('awards-container');
+            if (awardsContainer) {
+                awardsContainer.style.display = message.value ? 'flex' : 'none';
+            }
+        }
+
+        if (message.type === 'flipJoey') {
+            isFlipped = message.value;
+            resizeJoey();
         }
 
         if (message.type === 'achievementsUnlocked') {
@@ -224,7 +300,7 @@
                 const achievementNotification = document.createElement('div');
                 achievementNotification.className = 'achievement-notification';
                 achievementNotification.textContent = `Achievement Unlocked: ${ach.name}!`;
-                if(chatContainer) {
+                if (chatContainer) {
                     chatContainer.appendChild(achievementNotification);
                 }
             });
@@ -292,7 +368,7 @@
                 modeContainer.appendChild(modeData);
                 chatContainer.appendChild(modeContainer);
                 if (character && !isActing) character.className = 'idle';
-            } 
+            }
         }
     });
 
@@ -304,27 +380,38 @@
             statsAndAchievementsContainer.style.display = 'none';
         });
         statsAndAchievementsContainer.appendChild(closeButton);
+
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'button-container';
+        statsAndAchievementsContainer.appendChild(buttonContainer);
+        
+        const flipButton = document.createElement('button');
+        flipButton.textContent = 'Flip Joey';
+        flipButton.addEventListener('click', () => {
+            vscode.postMessage({ command: 'joey-sidekick.flipJoey' });
+        });
+        buttonContainer.appendChild(flipButton);
+
+        const toggleAchievementsButton = document.createElement('button');
+        toggleAchievementsButton.textContent = 'Toggle Achievements';
+        toggleAchievementsButton.addEventListener('click', () => {
+            vscode.postMessage({ command: 'joey-sidekick.toggleAchievements' });
+        });
+        buttonContainer.appendChild(toggleAchievementsButton);
+        
+        const clearStatsButton = document.createElement('button');
+        clearStatsButton.textContent = 'Clear Stats';
+        clearStatsButton.addEventListener('click', () => {
+            vscode.postMessage({ command: 'joey-sidekick.resetStats' });
+        });
+        buttonContainer.appendChild(clearStatsButton);
+
         const clearAchievementsButton = document.createElement('button');
         clearAchievementsButton.textContent = 'Clear Achievements';
         clearAchievementsButton.addEventListener('click', () => {
             vscode.postMessage({ command: 'joey-sidekick.clearAchievements' });
         });
-        statsAndAchievementsContainer.appendChild(clearAchievementsButton);
-        statsAndAchievementsContainer.appendChild(clearAchievementsButton);
-
-        const resetStatsButton = document.createElement('button');
-        resetStatsButton.textContent = 'Reset Stats';
-        resetStatsButton.addEventListener('click', () => {
-            vscode.postMessage({ command: 'joey-sidekick.resetStats' });
-        });
-        statsAndAchievementsContainer.appendChild(resetStatsButton);
-
-        const flipJoeyButton = document.createElement('button');
-        flipJoeyButton.textContent = 'Flip Joey';
-        flipJoeyButton.addEventListener('click', () => {
-            vscode.postMessage({ command: 'joey-sidekick.flipJoey' });
-        });
-        statsAndAchievementsContainer.appendChild(flipJoeyButton);
+        buttonContainer.appendChild(clearAchievementsButton);
     }
 
     // Initial state

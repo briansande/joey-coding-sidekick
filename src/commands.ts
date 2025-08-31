@@ -4,9 +4,10 @@ import { StatsManager } from './StatsManager';
 import { SidebarProvider } from './SidebarProvider';
 import { AchievementManager } from './AchievementManager';
 
-export function registerCommands(context: vscode.ExtensionContext, statsManager: StatsManager, sidebarProvider: SidebarProvider) {
-    const api = getRooApi();
+export function registerCommands(context: vscode.ExtensionContext, sidebarProvider: SidebarProvider) {
     const achievementManager = new AchievementManager(context);
+    const statsManager = new StatsManager(context, sidebarProvider, achievementManager);
+    const api = getRooApi();
 
     const startTaskDisposable = vscode.commands.registerCommand('joey-coding-sidekick.startTask', async () => {
         if (api) {
@@ -38,6 +39,7 @@ export function registerCommands(context: vscode.ExtensionContext, statsManager:
         const stats = statsManager.getStats();
         const achievements = achievementManager.getAchievements();
         sidebarProvider.postMessageToWebview({ type: 'toggleStats', value: { stats, achievements } });
+        sidebarProvider.sendAchievements(achievements);
     });
 
     const clearAchievementsDisposable = vscode.commands.registerCommand('joey-sidekick.clearAchievements', () => {
@@ -45,6 +47,7 @@ export function registerCommands(context: vscode.ExtensionContext, statsManager:
         const stats = statsManager.getStats();
         const achievements = achievementManager.getAchievements();
         sidebarProvider.postMessageToWebview({ type: 'toggleStats', value: { stats, achievements } });
+        sidebarProvider.sendAchievements(achievements);
         vscode.window.showInformationMessage('All achievements have been cleared.');
     });
 
@@ -55,6 +58,15 @@ export function registerCommands(context: vscode.ExtensionContext, statsManager:
         sidebarProvider.postMessageToWebview({ type: 'flipJoey', value: !isFlipped });
     });
 
-    context.subscriptions.push(startTaskDisposable, clearStatsDisposable, showStatsDisposable, clearAchievementsDisposable, flipJoeyDisposable);
-    context.subscriptions.push(startTaskDisposable, clearStatsDisposable, showStatsDisposable, clearAchievementsDisposable);
+    const toggleAchievementsDisposable = vscode.commands.registerCommand('joey-sidekick.toggleAchievements', () => {
+        const config = vscode.workspace.getConfiguration('joey-sidekick');
+        const showAchievements = config.get('showAchievements', true);
+        config.update('showAchievements', !showAchievements, vscode.ConfigurationTarget.Global);
+    });
+
+    const incrementJumpCountDisposable = vscode.commands.registerCommand('incrementJumpCount', () => {
+        statsManager.incrementJumpCount();
+    });
+
+    context.subscriptions.push(startTaskDisposable, clearStatsDisposable, showStatsDisposable, clearAchievementsDisposable, flipJoeyDisposable, toggleAchievementsDisposable, incrementJumpCountDisposable);
 }

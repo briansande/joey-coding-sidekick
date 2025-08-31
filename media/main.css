@@ -20,6 +20,7 @@ html {
     }
 }
 
+
 #message-container-wrapper {
     flex: 1;
     overflow-y: auto;
@@ -27,16 +28,17 @@ html {
 }
 
 #pet-container {
-    flex: 1;
+    flex: 0 1 256px;
+    min-height: 0;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
     border-top: 1px solid var(--vscode-editorWidget-border);
     background-color: transparent;
 }
 
-#character-wrapper.flipped {
-    transform: scaleX(-1);
+#character-wrapper {
+    transform-origin: bottom;
 }
 
 #character {
@@ -141,6 +143,10 @@ html {
 
 #character.action-debug-1 { background-position: 0px -1536px; }
 #character.action-debug-2 { background-position: -256px -1536px; }
+/* Bored animation */
+#character.bored-1 { background-position: 0px -768px; }
+#character.bored-2 { background-position: -256px -768px; }
+#character.bored-3 { background-position: -512px -768px; }
 
 #stats-and-achievements-container {
     display: none;
@@ -176,20 +182,25 @@ html {
     font-size: 1.5rem;
     cursor: pointer;
 }
-#button-container {
-    padding: 1rem;
-    text-align: center;
+
+#awards-container {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    padding-bottom: 20px;
 }
 
-#debug-window-button {
-    padding: 0.2rem 0.8rem;
-    background-color: var(--vscode-button-background);
-    color: var(--vscode-button-foreground);
-    border: 1px solid var(--vscode-button-border);
-    border-radius: 5px;
-    cursor: pointer;
+.award {
+    width: 64px;
+    height: 64px;
 }
 
-#debug-window-button:hover {
-    background-color: var(--vscode-button-hoverBackground);
+.button-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 1rem;
 }

@@ -460,13 +460,6 @@
     });
 
     if (settingsOverlay) {
-        const closeButton = settingsOverlay.querySelector('.close-button');
-        if (closeButton) {
-            closeButton.addEventListener('click', () => {
-                settingsOverlay.style.display = 'none';
-            });
-        }
-
         const tabs = settingsOverlay.querySelectorAll('.tab-link');
         const tabContents = settingsOverlay.querySelectorAll('.tab-content');
 

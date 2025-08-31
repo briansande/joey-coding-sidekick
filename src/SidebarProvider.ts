@@ -51,6 +51,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         const showAchievements = config.get('showAchievements', true);
         this.postMessageToWebview({ type: 'setAchievementsVisibility', value: showAchievements });
 
+        const size = config.get('size', '1.0x');
+        this.postMessageToWebview({ type: 'setJoeySize', value: size });
         this.sendAchievements(this.achievementManager.getAchievements());
 
         vscode.workspace.onDidChangeConfiguration(e => {
@@ -139,7 +141,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     <div id="options" class="tab-content">
                         <div id="options-container"></div>
                     </div>
-                    <button class="close-button">Close</button>
                 </div>
                 <div id="pet-container">
                     <div id="joey-and-awards-wrapper">

@@ -76,7 +76,7 @@ export function registerCommands(
 
     const setSizeDisposable = vscode.commands.registerCommand('joey-sidekick.setSize', (size) => {
         if (size) {
-            const config = vscode.workspace.getConfiguration('jo-sidekick');
+            const config = vscode.workspace.getConfiguration('joey-sidekick');
             config.update('size', size, vscode.ConfigurationTarget.Global);
             sidebarProvider.postMessageToWebview({ type: 'setJoeySize', value: size });
         }

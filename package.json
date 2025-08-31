@@ -41,7 +41,7 @@
       "activitybar": [
         {
           "id": "joey-sidekick",
-          "title": "Joey",
+          "title": "JOEY",
           "icon": "media/joey.svg"
         }
       ]
@@ -50,37 +50,37 @@
       "joey-sidekick": [
         {
           "id": "joey.sidebar",
-          "name": "Joey",
+          "name": "JOEY",
           "type": "webview",
-          "contextualTitle": "Joey"
+          "contextualTitle": "JOEY"
         }
       ]
     },
     "commands": [
       {
         "command": "joey-coding-sidekick.startTask",
-        "title": "Joey: Start New Roocode Task"
+        "title": "JOEY: Start New Roocode Task"
       },
       {
         "command": "joey-sidekick.resetStats",
-        "title": "Joey: Reset Stats"
+        "title": "JOEY: Reset Stats"
       },
       {
         "command": "joey-sidekick.flipJoey",
-        "title": "Joey: Flip Joey"
+        "title": "JOEY: Flip Joey"
       },
       {
         "command": "joey.showStats",
-        "title": "Joey: Show Stats",
+        "title": "JOEY: Show Stats",
         "icon": "$(gear)"
       },
       {
         "command": "joey-sidekick.clearAchievements",
-        "title": "Joey: Clear Achievements"
+        "title": "JOEY: Clear Achievements"
       },
       {
         "command": "joey-sidekick.toggleAchievements",
-        "title": "Joey: Toggle Achievements"
+        "title": "JOEY: Toggle Achievements"
       }
     ],
     "menus": {

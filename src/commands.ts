@@ -62,6 +62,7 @@ export function registerCommands(context: vscode.ExtensionContext, sidebarProvid
         const config = vscode.workspace.getConfiguration('joey-sidekick');
         const showAchievements = config.get('showAchievements', true);
         config.update('showAchievements', !showAchievements, vscode.ConfigurationTarget.Global);
+        sidebarProvider.postMessageToWebview({ type: 'setAchievementsVisibility', value: !showAchievements });
     });
 
     const incrementJumpCountDisposable = vscode.commands.registerCommand('incrementJumpCount', () => {

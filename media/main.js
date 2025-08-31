@@ -15,8 +15,12 @@
     const character = document.getElementById('character');
     const statsContainer = document.getElementById('stats-container');
     const achievementsContainer = document.getElementById('achievements-container');
-    const statsAndAchievementsContainer = document.getElementById('stats-and-achievements-container');
+    const optionsContainer = document.getElementById('options-container');
+    const settingsOverlay = document.getElementById('settings-overlay');
     const messageContainerWrapper = document.getElementById('message-container-wrapper');
+
+    let flipButton;
+    let toggleAchievementsButton;
 
     const toolCategories = {
         write: ['editedExistingFile', 'newFileCreated', 'appliedDiff', 'searchAndReplace', 'insertContent'],
@@ -228,12 +232,35 @@
         achievementsTitle.textContent = 'Achievements';
         achievementsContainer.appendChild(achievementsTitle);
 
-        const achievementsList = document.createElement('ul');
+        const achievementsList = document.createElement('div');
+        achievementsList.className = 'achievements-list';
+
         achievements.forEach(ach => {
-            const achievementItem = document.createElement('li');
-            achievementItem.textContent = `${ach.name} - ${ach.description} (${ach.unlocked ? 'Unlocked' : 'Locked'})`;
-            achievementsList.appendChild(achievementItem);
+            const achievementCard = document.createElement('div');
+            achievementCard.className = `achievement-card ${ach.unlocked ? 'unlocked' : 'locked'}`;
+
+            const achievementIcon = document.createElement('img');
+            achievementIcon.src = ach.svg;
+            achievementIcon.className = 'achievement-icon';
+
+            const achievementDetails = document.createElement('div');
+            achievementDetails.className = 'achievement-details';
+
+            const achievementName = document.createElement('div');
+            achievementName.className = 'achievement-name';
+            achievementName.textContent = ach.name;
+
+            const achievementDescription = document.createElement('div');
+            achievementDescription.className = 'achievement-description';
+            achievementDescription.textContent = ach.description;
+
+            achievementDetails.appendChild(achievementName);
+            achievementDetails.appendChild(achievementDescription);
+            achievementCard.appendChild(achievementIcon);
+            achievementCard.appendChild(achievementDetails);
+            achievementsList.appendChild(achievementCard);
         });
+
         achievementsContainer.appendChild(achievementsList);
     }
     function displayAwards(unlockedAchievements) {
@@ -278,17 +305,17 @@
         }
 
         if (message.type === 'toggleStats') {
-            if (statsAndAchievementsContainer) {
+            if (settingsOverlay) {
                 updateStats(message.value.stats);
                 updateAchievements(message.value.achievements);
-                const isVisible = statsAndAchievementsContainer.style.display === 'block';
-                statsAndAchievementsContainer.style.display = isVisible ? 'none' : 'block';
+                const isVisible = settingsOverlay.style.display === 'block';
+                settingsOverlay.style.display = isVisible ? 'none' : 'block';
             }
         }
 
         if (message.type === 'setDebugMenuVisibility') {
-            if (statsAndAchievementsContainer) {
-                statsAndAchievementsContainer.style.display = message.value ? 'block' : 'none';
+            if (settingsOverlay) {
+                settingsOverlay.style.display = message.value ? 'block' : 'none';
             }
         }
 
@@ -297,10 +324,16 @@
             if (awardsContainer) {
                 awardsContainer.style.display = message.value ? 'flex' : 'none';
             }
+            if (toggleAchievementsButton) {
+                toggleAchievementsButton.textContent = message.value ? 'Hide Achievements' : 'Show Achievements';
+            }
         }
 
         if (message.type === 'flipJoey') {
             isFlipped = message.value;
+            if (flipButton) {
+                flipButton.textContent = isFlipped ? 'Joey Facing Left' : 'Joey Facing Right';
+            }
             resizeJoey();
         }
 
@@ -381,46 +414,63 @@
         }
     });
 
-    if (statsAndAchievementsContainer) {
-        const closeButton = document.createElement('button');
-        closeButton.textContent = 'Close';
-        closeButton.className = 'close-button';
-        closeButton.addEventListener('click', () => {
-            statsAndAchievementsContainer.style.display = 'none';
-        });
-        statsAndAchievementsContainer.appendChild(closeButton);
+    if (settingsOverlay) {
+        const closeButton = settingsOverlay.querySelector('.close-button');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                settingsOverlay.style.display = 'none';
+            });
+        }
 
-        const buttonContainer = document.createElement('div');
-        buttonContainer.className = 'button-container';
-        statsAndAchievementsContainer.appendChild(buttonContainer);
-        
-        const flipButton = document.createElement('button');
-        flipButton.textContent = 'Flip Joey';
-        flipButton.addEventListener('click', () => {
-            vscode.postMessage({ command: 'joey-sidekick.flipJoey' });
-        });
-        buttonContainer.appendChild(flipButton);
+        const tabs = settingsOverlay.querySelectorAll('.tab-link');
+        const tabContents = settingsOverlay.querySelectorAll('.tab-content');
 
-        const toggleAchievementsButton = document.createElement('button');
-        toggleAchievementsButton.textContent = 'Toggle Achievements';
-        toggleAchievementsButton.addEventListener('click', () => {
-            vscode.postMessage({ command: 'joey-sidekick.toggleAchievements' });
-        });
-        buttonContainer.appendChild(toggleAchievementsButton);
-        
-        const clearStatsButton = document.createElement('button');
-        clearStatsButton.textContent = 'Clear Stats';
-        clearStatsButton.addEventListener('click', () => {
-            vscode.postMessage({ command: 'joey-sidekick.resetStats' });
-        });
-        buttonContainer.appendChild(clearStatsButton);
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.getAttribute('data-tab');
 
-        const clearAchievementsButton = document.createElement('button');
-        clearAchievementsButton.textContent = 'Clear Achievements';
-        clearAchievementsButton.addEventListener('click', () => {
-            vscode.postMessage({ command: 'joey-sidekick.clearAchievements' });
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                tabContents.forEach(content => {
+                    if (content.id === target) {
+                        content.classList.add('active');
+                    } else {
+                        content.classList.remove('active');
+                    }
+                });
+            });
         });
-        buttonContainer.appendChild(clearAchievementsButton);
+
+        if (optionsContainer) {
+            flipButton = document.createElement('button');
+            flipButton.textContent = 'Flip Joey';
+            flipButton.addEventListener('click', () => {
+                vscode.postMessage({ command: 'joey-sidekick.flipJoey' });
+            });
+            optionsContainer.appendChild(flipButton);
+
+            toggleAchievementsButton = document.createElement('button');
+            toggleAchievementsButton.textContent = 'Toggle Achievements';
+            toggleAchievementsButton.addEventListener('click', () => {
+                vscode.postMessage({ command: 'joey-sidekick.toggleAchievements' });
+            });
+            optionsContainer.appendChild(toggleAchievementsButton);
+
+            const clearStatsButton = document.createElement('button');
+            clearStatsButton.textContent = 'Clear Stats';
+            clearStatsButton.addEventListener('click', () => {
+                vscode.postMessage({ command: 'joey-sidekick.resetStats' });
+            });
+            optionsContainer.appendChild(clearStatsButton);
+
+            const clearAchievementsButton = document.createElement('button');
+            clearAchievementsButton.textContent = 'Clear Achievements';
+            clearAchievementsButton.addEventListener('click', () => {
+                vscode.postMessage({ command: 'joey-sidekick.clearAchievements' });
+            });
+            optionsContainer.appendChild(clearAchievementsButton);
+        }
     }
 
     // Initial state

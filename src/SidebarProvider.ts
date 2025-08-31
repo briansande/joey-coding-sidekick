@@ -61,6 +61,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             if (e.affectsConfiguration('joey-sidekick.showAchievements')) {
                 const showAchievements = vscode.workspace.getConfiguration('joey-sidekick').get('showAchievements', true);
                 this.postMessageToWebview({ type: 'setAchievementsVisibility', value: showAchievements });
+                this.postMessageToWebview({ type: 'setAchievementsVisibility', value: showAchievements });
             }
         });
     }
@@ -123,9 +124,22 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 <div id="message-container-wrapper" style="display: none;">
                     <div id="chat-container"></div>
                 </div>
-                <div id="stats-and-achievements-container" style="display: none;">
-                    <div id="stats-container"></div>
-                    <div id="achievements-container"></div>
+                <div id="settings-overlay" style="display: none;">
+                    <div class="tabs">
+                        <button class="tab-link active" data-tab="stats">Stats</button>
+                        <button class="tab-link" data-tab="achievements">Achievements</button>
+                        <button class="tab-link" data-tab="options">Options</button>
+                    </div>
+                    <div id="stats" class="tab-content active">
+                        <div id="stats-container"></div>
+                    </div>
+                    <div id="achievements" class="tab-content">
+                        <div id="achievements-container"></div>
+                    </div>
+                    <div id="options" class="tab-content">
+                        <div id="options-container"></div>
+                    </div>
+                    <button class="close-button">Close</button>
                 </div>
                 <div id="pet-container">
                     <div id="joey-and-awards-wrapper">

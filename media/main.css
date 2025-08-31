@@ -31,7 +31,7 @@ html {
     flex: 1;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
     border-top: 1px solid var(--vscode-editorWidget-border);
     background-color: transparent;
     overflow: hidden;
@@ -40,11 +40,11 @@ html {
 #joey-and-awards-wrapper {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    transform-origin: bottom;
+    align-items: flex-start;
+    transform-origin: bottom center;
 }
 #character-wrapper {
-    transform-origin: bottom;
+    transform-origin: bottom center;
 }
 
 #character {
@@ -61,7 +61,7 @@ html {
     background-position: -768px -1024px;
     transform: translateY(0);
     animation: bounce 2s infinite;
-    transform-origin: bottom;
+    transform-origin: bottom center;
 }
 #character.idle[data-mode="architect"] {
     background-position: -512px -512px;
@@ -154,7 +154,7 @@ html {
 #character.bored-2 { background-position: -256px -768px; }
 #character.bored-3 { background-position: -512px -768px; }
 
-#stats-and-achievements-container {
+#settings-overlay {
     display: none;
     position: absolute;
     top: 0;
@@ -164,6 +164,35 @@ html {
     background-color: var(--vscode-sideBar-background);
     padding: 1rem;
     overflow-y: auto;
+    z-index: 100;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 1px solid var(--vscode-editorWidget-border);
+    margin-bottom: 1rem;
+}
+
+.tab-link {
+    background: none;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    color: var(--vscode-foreground);
+    border-bottom: 2px solid transparent;
+}
+
+.tab-link.active {
+    border-bottom: 2px solid var(--vscode-button-background);
+    color: var(--vscode-button-background);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
 }
 
 #stats-container h3,
@@ -201,9 +230,9 @@ html {
     height: 64px;
 }
 
-.button-container {
+#options-container {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 8px;
     margin-top: 1rem;
 }
@@ -233,4 +262,48 @@ html {
 .award-container:hover .tooltip {
     visibility: visible;
     opacity: 1;
+}
+.achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.achievement-card {
+    display: flex;
+    align-items: center;
+    background-color: var(--vscode-editor-background);
+    border: 1px solid var(--vscode-editorWidget-border);
+    border-radius: 4px;
+    padding: 1rem;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.achievement-card.locked {
+    opacity: 0.5;
+}
+
+.achievement-card.unlocked:hover {
+    background-color: var(--vscode-button-secondaryBackground);
+}
+
+.achievement-icon {
+    width: 48px;
+    height: 48px;
+    margin-right: 1rem;
+}
+
+.achievement-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.achievement-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.achievement-description {
+    font-size: 0.9rem;
+    color: var(--vscode-editor-foreground);
 }

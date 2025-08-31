@@ -13,6 +13,8 @@
     const chatContainer = document.getElementById('chat-container');
     const petContainer = document.getElementById('pet-container');
     const character = document.getElementById('character');
+    const statsContainer = document.getElementById('stats-container');
+    const achievementsContainer = document.getElementById('achievements-container');
 
     const toolCategories = {
         write: ['editedExistingFile', 'newFileCreated', 'appliedDiff', 'searchAndReplace', 'insertContent'],
@@ -146,16 +148,61 @@
         }
     }
 
-    // function logApiState(state) {
-    //     if (!chatContainer) return;
-    //     const logContainer = document.createElement('div');
-    //     logContainer.className = 'api-log-container';
-    //     logContainer.textContent = state;
-    //     chatContainer.appendChild(logContainer);
-    // }
+    function updateStats(stats) {
+        if (!statsContainer) return;
+
+        statsContainer.innerHTML = '';
+        const statsTitle = document.createElement('h3');
+        statsTitle.textContent = 'Mode Usage Stats';
+        statsContainer.appendChild(statsTitle);
+
+        const statsList = document.createElement('ul');
+        for (const mode in stats) {
+            const statItem = document.createElement('li');
+            statItem.textContent = `${mode}: ${stats[mode]}`;
+            statsList.appendChild(statItem);
+        }
+        statsContainer.appendChild(statsList);
+    }
+
+    function updateAchievements(achievements) {
+        if (!achievementsContainer) return;
+
+        achievementsContainer.innerHTML = '';
+        const achievementsTitle = document.createElement('h3');
+        achievementsTitle.textContent = 'Achievements';
+        achievementsContainer.appendChild(achievementsTitle);
+
+        const achievementsList = document.createElement('ul');
+        achievements.forEach(ach => {
+            const achievementItem = document.createElement('li');
+            achievementItem.textContent = `${ach.name} - ${ach.description} (${ach.unlocked ? 'Unlocked' : 'Locked'})`;
+            achievementsList.appendChild(achievementItem);
+        });
+        achievementsContainer.appendChild(achievementsList);
+    }
 
     window.addEventListener('message', event => {
         const message = event.data;
+
+        if (message.type === 'updateStats') {
+            updateStats(message.value);
+        }
+
+        if (message.type === 'updateAchievements') {
+            updateAchievements(message.value);
+        }
+
+        if (message.type === 'achievementsUnlocked') {
+            message.value.forEach(ach => {
+                const achievementNotification = document.createElement('div');
+                achievementNotification.className = 'achievement-notification';
+                achievementNotification.textContent = `Achievement Unlocked: ${ach.name}!`;
+                if(chatContainer) {
+                    chatContainer.appendChild(achievementNotification);
+                }
+            });
+        }
 
         try {
             if (message && message.value && message.value.message && typeof message.value.message.text === 'string') {

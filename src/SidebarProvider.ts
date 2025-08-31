@@ -76,6 +76,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 <div id="message-container-wrapper">
                     <div id="chat-container"></div>
                 </div>
+                <div id="stats-container"></div>
+                <div id="achievements-container"></div>
                 <div id="pet-container">
                     <div id="character" class="idle"></div>
                 </div>

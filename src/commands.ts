@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
 import { getRooApi } from './roocode/api';
+import { StatsManager } from './StatsManager';
 
-export function registerCommands(context: vscode.ExtensionContext) {
+export function registerCommands(context: vscode.ExtensionContext, statsManager: StatsManager) {
     const api = getRooApi();
 
-    const disposable = vscode.commands.registerCommand('joey-coding-sidekick.startTask', async () => {
+    const startTaskDisposable = vscode.commands.registerCommand('joey-coding-sidekick.startTask', async () => {
         if (api) {
             const message = await vscode.window.showInputBox({ prompt: 'Enter a message to start a new Roocode task' });
             if (message) {
@@ -25,5 +26,10 @@ export function registerCommands(context: vscode.ExtensionContext) {
         }
     });
 
-    context.subscriptions.push(disposable);
+    const clearStatsDisposable = vscode.commands.registerCommand('joey.clearStats', () => {
+        statsManager.clearStats();
+        vscode.window.showInformationMessage('Joey\'s stats have been cleared.');
+    });
+
+    context.subscriptions.push(startTaskDisposable, clearStatsDisposable);
 }

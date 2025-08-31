@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { RooCodeAPI, RooCodeEventName, TokenUsage, ToolUsage } from './types';
 import { SidebarProvider } from '../SidebarProvider';
+import { StatsManager } from '../StatsManager';
+import { AchievementManager } from '../AchievementManager';
 
 let rooApi: RooCodeAPI | undefined;
 
@@ -30,7 +32,10 @@ export async function initializeRooAPI(): Promise<RooCodeAPI | undefined> {
     }
 }
 
-export function setupRooEventListeners(api: RooCodeAPI, sidebarProvider: SidebarProvider) {
+export function setupRooEventListeners(api: RooCodeAPI, sidebarProvider: SidebarProvider, statsManager: StatsManager, achievementManager: AchievementManager) {
+    sidebarProvider.postMessageToWebview({ type: 'updateStats', value: statsManager.getStats() });
+    sidebarProvider.postMessageToWebview({ type: 'updateAchievements', value: achievementManager.getAchievements() });
+
     // Listen for all events from Roocode
     Object.values(RooCodeEventName)
         .filter(e => ![
@@ -47,10 +52,18 @@ export function setupRooEventListeners(api: RooCodeAPI, sidebarProvider: Sidebar
     // Handle taskModeSwitched separately as it has a different signature
     api.on(RooCodeEventName.TaskModeSwitched, (taskId: string, modeSlug: string) => {
         console.log(`Received Roocode event: ${RooCodeEventName.TaskModeSwitched}`, { taskId, modeSlug });
+        const updatedStats = statsManager.incrementModeCount(modeSlug);
         sidebarProvider.postMessageToWebview({
             type: RooCodeEventName.TaskModeSwitched,
             value: { taskId, modeSlug }
         });
+        sidebarProvider.postMessageToWebview({ type: 'updateStats', value: updatedStats });
+
+        const newlyUnlocked = achievementManager.checkAchievements(updatedStats);
+        if (newlyUnlocked.length > 0) {
+            sidebarProvider.postMessageToWebview({ type: 'achievementsUnlocked', value: newlyUnlocked });
+            sidebarProvider.postMessageToWebview({ type: 'updateAchievements', value: achievementManager.getAchievements() });
+        }
     });
 
     // Handle taskCompleted separately to include token and tool usage

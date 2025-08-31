@@ -26,7 +26,7 @@ export async function activate(context: vscode.ExtensionContext) {
         let isAnimating = false;
         let inactivityTimeout: NodeJS.Timeout;
         let boredInterval: NodeJS.Timeout | undefined;
-        const boredIntervalTime = 10000; // 10 seconds
+        const boredIntervalTime = 20000; // 20 seconds
 
         function startBoredInterval() {
             if (!boredInterval) {

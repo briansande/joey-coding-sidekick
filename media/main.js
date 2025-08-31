@@ -129,7 +129,7 @@
                 thinkingInterval = null;
             }
             if (isActing) {
-                logApiState('API request stopped');
+                // logApiState('API request stopped');
             }
             isActing = false;
             if (character) {
@@ -146,13 +146,13 @@
         }
     }
 
-    function logApiState(state) {
-        if (!chatContainer) return;
-        const logContainer = document.createElement('div');
-        logContainer.className = 'api-log-container';
-        logContainer.textContent = state;
-        chatContainer.appendChild(logContainer);
-    }
+    // function logApiState(state) {
+    //     if (!chatContainer) return;
+    //     const logContainer = document.createElement('div');
+    //     logContainer.className = 'api-log-container';
+    //     logContainer.textContent = state;
+    //     chatContainer.appendChild(logContainer);
+    // }
 
     window.addEventListener('message', event => {
         const message = event.data;
@@ -176,7 +176,7 @@
         const isApiReqStarted = message.type === 'message' && message.value && message.value.message && message.value.message.say === 'api_req_started';
 
         if (isApiReqStarted) {
-            logApiState('API request started');
+            // logApiState('API request started');
             startThinkingAnimation();
         } else {
             stopThinkingAnimation();
@@ -207,24 +207,11 @@
                         } else if (mode && actionTriggers[mode] === category) {
                             playActionAnimation();
                         }
-                        if (category) {
-                            const toolContainer = document.createElement('div');
-                            toolContainer.className = 'tool-call-container';
-                            toolContainer.textContent = `${category} tool was used`;
-                            chatContainer.appendChild(toolContainer);
-                        }
                     }
                 }
             }
 
-            if (message.type === 'message') {
-                const messageContainer = document.createElement('div');
-                messageContainer.className = 'message-container';
-                const messageData = document.createElement('pre');
-                messageData.textContent = typeof message.value === 'string' ? message.value : JSON.stringify(message.value, null, 2);
-                messageContainer.appendChild(messageData);
-                chatContainer.appendChild(messageContainer);
-            } else if (message.type === 'taskModeSwitched') {
+            if (message.type === 'taskModeSwitched') {
                 const modeContainer = document.createElement('div');
                 modeContainer.className = 'mode-container';
                 const modeData = document.createElement('p');
@@ -232,26 +219,7 @@
                 modeContainer.appendChild(modeData);
                 chatContainer.appendChild(modeContainer);
                 if (character && !isActing) character.className = 'idle';
-            } else if (message.type === 'taskCompleted') {
-                const { taskId, tokenUsage, toolUsage } = message.value;
-                const completedContainer = document.createElement('div');
-                completedContainer.className = 'message-container task-completed';
-                let content = `Task ${taskId} completed.\n\n`;
-                if (tokenUsage) {
-                    content += `Token Usage:\n  - In: ${tokenUsage.totalTokensIn}, Out: ${tokenUsage.totalTokensOut}, Cost: $${tokenUsage.totalCost.toFixed(6)}\n\n`;
-                }
-                if (toolUsage && Object.keys(toolUsage).length > 0) {
-                    content += 'Tool Usage:\n';
-                    for (const toolName in toolUsage) {
-                        const usage = toolUsage[toolName];
-                        content += `  - ${toolName}: Attempts: ${usage.attempts}, Failures: ${usage.failures}\n`;
-                    }
-                }
-                const messageData = document.createElement('pre');
-                messageData.textContent = content;
-                completedContainer.appendChild(messageData);
-                chatContainer.appendChild(completedContainer);
-            }
+            } 
         }
     });
 

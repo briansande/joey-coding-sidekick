@@ -56,6 +56,7 @@
     let animationStartTime;
     let isProtectedAction = false;
     let isFlipped = false;
+    let joeySize = 1.0;
 
     function resizeJoey() {
         if (!petContainer || !character) return;
@@ -70,7 +71,7 @@
 
         const joeyAndAwardsWrapper = document.getElementById('joey-and-awards-wrapper');
         if (joeyAndAwardsWrapper) {
-            joeyAndAwardsWrapper.style.transform = `scale(${scale})`;
+            joeyAndAwardsWrapper.style.transform = `scale(${scale * joeySize})`;
         }
         const characterWrapper = document.getElementById('character-wrapper');
         if (characterWrapper) {
@@ -84,6 +85,7 @@
     function playJumpAnimation() {
         if (!character || isJumping || isActing) return;
         vscode.postMessage({ command: 'incrementJumpCount' });
+        vscode.postMessage({ command: 'joey-sidekick.animationStarted' });
         isJumping = true;
         character.style.animation = 'none';
         // @ts-ignore
@@ -100,6 +102,7 @@
                     character.className = 'idle';
                     character.style.animation = '';
                     isJumping = false;
+                    vscode.postMessage({ command: 'joey-sidekick.animationEnded' });
                 }, 300);
             }, 500);
         }, 600);
@@ -109,6 +112,7 @@
         if (!character || isActing || isJumping) return;
         const mode = animationMode || character.getAttribute('data-mode');
         if (!mode || !actionAnimations[mode]) return;
+        vscode.postMessage({ command: 'joey-sidekick.animationStarted' });
         isActing = true;
         if (mode === 'code') {
             isProtectedAction = true;
@@ -127,11 +131,13 @@
             if (character) character.className = 'idle';
             isActing = false;
             isProtectedAction = false;
+            vscode.postMessage({ command: 'joey-sidekick.animationEnded' });
         }, min_animation_duration);
     }
 
     function playBoredAnimation() {
         if (!character || isActing || isJumping) return;
+        vscode.postMessage({ command: 'joey-sidekick.animationStarted' });
         isActing = true;
 
         const frames = ['bored-1', 'bored-2', 'bored-3', 'bored-2'];
@@ -152,6 +158,7 @@
                         character.className = 'idle';
                     }
                     isActing = false;
+                    vscode.postMessage({ command: 'joey-sidekick.animationEnded' });
                 }
             }
         }, 300);
@@ -163,6 +170,7 @@
         const thinkingModes = ['architect', 'orchestrator', 'debug'];
         if (!mode || !thinkingModes.includes(mode) || isActing) return;
 
+        vscode.postMessage({ command: 'joey-sidekick.animationStarted' });
         isActing = true;
         animationStartTime = Date.now();
         const frames = actionAnimations[mode];
@@ -196,6 +204,7 @@
             if (character) {
                 character.className = 'idle';
             }
+            vscode.postMessage({ command: 'joey-sidekick.animationEnded' });
         };
 
         if (isActing) {
@@ -211,17 +220,44 @@
         if (!statsContainer) return;
 
         statsContainer.innerHTML = '';
-        const statsTitle = document.createElement('h3');
-        statsTitle.textContent = 'Mode Usage Stats';
-        statsContainer.appendChild(statsTitle);
 
-        const statsList = document.createElement('ul');
-        for (const mode in stats) {
-            const statItem = document.createElement('li');
-            statItem.textContent = `${mode}: ${stats[mode]}`;
-            statsList.appendChild(statItem);
+        const modeSlugs = ['architect', 'code', 'ask', 'debug', 'orchestrator', 'mode-writer', 'coding-teacher'];
+        const categorizedStats = {
+            modes: {},
+            tools: {},
+            other: {}
+        };
+
+        for (const key in stats) {
+            if (modeSlugs.includes(key)) {
+                categorizedStats.modes[key] = stats[key];
+            } else if (key.startsWith('tool_')) {
+                const toolName = key.replace('tool_', '');
+                categorizedStats.tools[toolName] = stats[key];
+            } else {
+                categorizedStats.other[key] = stats[key];
+            }
         }
-        statsContainer.appendChild(statsList);
+
+        const createStatList = (title, category) => {
+            if (Object.keys(category).length > 0) {
+                const titleEl = document.createElement('h3');
+                titleEl.textContent = title;
+                statsContainer.appendChild(titleEl);
+
+                const listEl = document.createElement('ul');
+                for (const key in category) {
+                    const statItem = document.createElement('li');
+                    statItem.textContent = `${key}: ${category[key]}`;
+                    listEl.appendChild(statItem);
+                }
+                statsContainer.appendChild(listEl);
+            }
+        };
+
+        createStatList('Modes', categorizedStats.modes);
+        createStatList('Tools', categorizedStats.tools);
+        createStatList('Other', categorizedStats.other);
     }
 
     function updateAchievements(achievements) {
@@ -333,6 +369,15 @@
             isFlipped = message.value;
             if (flipButton) {
                 flipButton.textContent = isFlipped ? 'Joey Facing Left' : 'Joey Facing Right';
+            }
+            resizeJoey();
+        }
+
+        if (message.type === 'setJoeySize') {
+            joeySize = parseFloat(message.value);
+            const sizeSelect = document.querySelector('select');
+            if (sizeSelect) {
+                sizeSelect.value = message.value;
             }
             resizeJoey();
         }
@@ -470,6 +515,29 @@
                 vscode.postMessage({ command: 'joey-sidekick.clearAchievements' });
             });
             optionsContainer.appendChild(clearAchievementsButton);
+
+            const sizeContainer = document.createElement('div');
+            sizeContainer.style.display = 'flex';
+            sizeContainer.style.flexDirection = 'column';
+            sizeContainer.style.gap = '4px';
+            const sizeLabel = document.createElement('label');
+            sizeLabel.textContent = 'Joey Size';
+            sizeLabel.style.fontWeight = 'bold';
+            const sizeSelect = document.createElement('select');
+            const sizes = ['0.25x', '0.5x', '1.0x'];
+            sizes.forEach(size => {
+                const option = document.createElement('option');
+                option.value = size;
+                option.textContent = size;
+                sizeSelect.appendChild(option);
+            });
+            sizeSelect.addEventListener('change', (event) => {
+                // @ts-ignore
+                vscode.postMessage({ command: 'joey-sidekick.setSize', value: event.target.value });
+            });
+            sizeContainer.appendChild(sizeLabel);
+            sizeContainer.appendChild(sizeSelect);
+            optionsContainer.appendChild(sizeContainer);
         }
     }
 

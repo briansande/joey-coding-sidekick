@@ -37,7 +37,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
         webviewView.webview.onDidReceiveMessage(async (data) => {
             if (data.command) {
-                await vscode.commands.executeCommand(data.command);
+                await vscode.commands.executeCommand(data.command, data.value);
             }
         });
 

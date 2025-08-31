@@ -4,7 +4,12 @@ import { StatsManager } from './StatsManager';
 import { SidebarProvider } from './SidebarProvider';
 import { AchievementManager } from './AchievementManager';
 
-export function registerCommands(context: vscode.ExtensionContext, sidebarProvider: SidebarProvider) {
+export function registerCommands(
+    context: vscode.ExtensionContext, 
+    sidebarProvider: SidebarProvider,
+    onAnimationStarted: () => void,
+    onAnimationEnded: () => void
+) {
     const achievementManager = new AchievementManager(context);
     const statsManager = new StatsManager(context, sidebarProvider, achievementManager);
     const api = getRooApi();
@@ -69,5 +74,32 @@ export function registerCommands(context: vscode.ExtensionContext, sidebarProvid
         statsManager.incrementJumpCount();
     });
 
-    context.subscriptions.push(startTaskDisposable, clearStatsDisposable, showStatsDisposable, clearAchievementsDisposable, flipJoeyDisposable, toggleAchievementsDisposable, incrementJumpCountDisposable);
+    const setSizeDisposable = vscode.commands.registerCommand('joey-sidekick.setSize', (size) => {
+        if (size) {
+            const config = vscode.workspace.getConfiguration('jo-sidekick');
+            config.update('size', size, vscode.ConfigurationTarget.Global);
+            sidebarProvider.postMessageToWebview({ type: 'setJoeySize', value: size });
+        }
+    });
+
+    const animationStartedDisposable = vscode.commands.registerCommand('joey-sidekick.animationStarted', () => {
+        onAnimationStarted();
+    });
+
+    const animationEndedDisposable = vscode.commands.registerCommand('joey-sidekick.animationEnded', () => {
+        onAnimationEnded();
+    });
+
+    context.subscriptions.push(
+        startTaskDisposable, 
+        clearStatsDisposable, 
+        showStatsDisposable, 
+        clearAchievementsDisposable, 
+        flipJoeyDisposable, 
+        toggleAchievementsDisposable,
+        incrementJumpCountDisposable,
+        setSizeDisposable,
+        animationStartedDisposable,
+        animationEndedDisposable
+    );
 }

@@ -307,3 +307,30 @@ html {
     font-size: 0.9rem;
     color: var(--vscode-editor-foreground);
 }
+
+#stats-container {
+    background-color: var(--vscode-sideBar-background);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+#stats-container h3 {
+    border-bottom: 1px solid var(--vscode-editorWidget-border);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--vscode-sideBar-foreground);
+}
+
+#stats-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#stats-container li {
+    background-color: var(--vscode-editor-background);
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}

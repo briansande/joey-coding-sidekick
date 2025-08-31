@@ -23,8 +23,7 @@ export async function activate(context: vscode.ExtensionContext) {
             )
         );
 
-        registerCommands(context, sidebarProvider);
-        
+        let isAnimating = false;
         let inactivityTimeout: NodeJS.Timeout;
         let boredInterval: NodeJS.Timeout | undefined;
         const boredIntervalTime = 10000; // 10 seconds
@@ -32,7 +31,9 @@ export async function activate(context: vscode.ExtensionContext) {
         function startBoredInterval() {
             if (!boredInterval) {
                 boredInterval = setInterval(() => {
-                    sidebarProvider.postMessageToWebview({ type: 'joeyIsBored', value: null });
+                    if (!isAnimating) {
+                        sidebarProvider.postMessageToWebview({ type: 'joeyIsBored', value: null });
+                    }
                 }, boredIntervalTime);
             }
         }
@@ -44,11 +45,29 @@ export async function activate(context: vscode.ExtensionContext) {
                 boredInterval = undefined;
             }
             inactivityTimeout = setTimeout(() => {
-                sidebarProvider.postMessageToWebview({ type: 'joeyIsBored', value: null });
-                startBoredInterval();
+                if (!isAnimating) {
+                    sidebarProvider.postMessageToWebview({ type: 'joeyIsBored', value: null });
+                    startBoredInterval();
+                }
             }, boredIntervalTime);
         }
 
+        function onAnimationStarted() {
+            isAnimating = true;
+            clearTimeout(inactivityTimeout);
+            if (boredInterval) {
+                clearInterval(boredInterval);
+                boredInterval = undefined;
+            }
+        }
+
+        function onAnimationEnded() {
+            isAnimating = false;
+            resetInactivityTimer();
+        }
+
+        registerCommands(context, sidebarProvider, onAnimationStarted, onAnimationEnded);
+        
         vscode.workspace.onDidChangeTextDocument(() => resetInactivityTimer());
         vscode.window.onDidChangeActiveTextEditor(() => resetInactivityTimer());
 

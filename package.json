@@ -40,8 +40,22 @@
       {
         "command": "joey-coding-sidekick.startTask",
         "title": "Joey: Start New Roocode Task"
+      },
+      {
+        "command": "joey.showStats",
+        "title": "Joey: Show Stats",
+        "icon": "$(gear)"
       }
-    ]
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "joey.showStats",
+          "when": "view == joey.sidebar",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

@@ -25,6 +25,27 @@ export class StatsManager {
         this.context.globalState.update(StatsManager.STATS_KEY, stats);
         return stats;
     }
+    public addTokens(count: number): Record<string, number> {
+        const stats = this.getStats();
+        stats['totalTokens'] = (stats['totalTokens'] || 0) + count;
+        this.context.globalState.update(StatsManager.STATS_KEY, stats);
+        return stats;
+    }
+    public incrementTaskCount(): Record<string, number> {
+        const stats = this.getStats();
+        stats['tasksCompleted'] = (stats['tasksCompleted'] || 0) + 1;
+        this.context.globalState.update(StatsManager.STATS_KEY, stats);
+        return stats;
+    }
+
+    public addToolUsage(toolName: string): Record<string, number> {
+        const stats = this.getStats();
+        const toolStatsKey = `tool_${toolName}`;
+        stats[toolStatsKey] = (stats[toolStatsKey] || 0) + 1;
+        this.context.globalState.update(StatsManager.STATS_KEY, stats);
+        return stats;
+    }
+
 
     public clearStats() {
         this.context.globalState.update(StatsManager.STATS_KEY, {});

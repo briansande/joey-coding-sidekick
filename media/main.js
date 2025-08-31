@@ -15,6 +15,16 @@
     const character = document.getElementById('character');
     const statsContainer = document.getElementById('stats-container');
     const achievementsContainer = document.getElementById('achievements-container');
+    const statsAndAchievementsContainer = document.getElementById('stats-and-achievements-container');
+    const debugWindowButton = document.getElementById('debug-window-button');
+    const messageContainerWrapper = document.getElementById('message-container-wrapper');
+
+    if (debugWindowButton && messageContainerWrapper) {
+        debugWindowButton.addEventListener('click', () => {
+            const isVisible = messageContainerWrapper.style.display === 'block';
+            messageContainerWrapper.style.display = isVisible ? 'none' : 'block';
+        });
+    }
 
     const toolCategories = {
         write: ['editedExistingFile', 'newFileCreated', 'appliedDiff', 'searchAndReplace', 'insertContent'],
@@ -193,6 +203,15 @@
             updateAchievements(message.value);
         }
 
+        if (message.type === 'toggleStats') {
+            if (statsAndAchievementsContainer) {
+                updateStats(message.value.stats);
+                updateAchievements(message.value.achievements);
+                const isVisible = statsAndAchievementsContainer.style.display === 'block';
+                statsAndAchievementsContainer.style.display = isVisible ? 'none' : 'block';
+            }
+        }
+
         if (message.type === 'achievementsUnlocked') {
             message.value.forEach(ach => {
                 const achievementNotification = document.createElement('div');
@@ -269,6 +288,16 @@
             } 
         }
     });
+
+    if (statsAndAchievementsContainer) {
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'Close';
+        closeButton.className = 'close-button';
+        closeButton.addEventListener('click', () => {
+            statsAndAchievementsContainer.style.display = 'none';
+        });
+        statsAndAchievementsContainer.appendChild(closeButton);
+    }
 
     // Initial state
     if (character) {

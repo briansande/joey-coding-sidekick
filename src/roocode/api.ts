@@ -69,10 +69,32 @@ export function setupRooEventListeners(api: RooCodeAPI, sidebarProvider: Sidebar
     // Handle taskCompleted separately to include token and tool usage
     api.on(RooCodeEventName.TaskCompleted, (taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage) => {
         console.log(`Received Roocode event: ${RooCodeEventName.TaskCompleted}`, { taskId, tokenUsage, toolUsage });
+    
+        // Add tokens to stats
+        const totalTokens = (tokenUsage.totalTokensIn || 0) + (tokenUsage.totalTokensOut || 0);
+        let updatedStats = statsManager.addTokens(totalTokens);
+    
+        // Increment tasks completed
+        updatedStats = statsManager.incrementTaskCount();
+    
+        // Add tool usage to stats
+        for (const toolName in toolUsage) {
+            if (toolUsage.hasOwnProperty(toolName)) {
+                updatedStats = statsManager.addToolUsage(toolName);
+            }
+        }
+    
         sidebarProvider.postMessageToWebview({
             type: RooCodeEventName.TaskCompleted,
             value: { taskId, tokenUsage, toolUsage }
         });
+        sidebarProvider.postMessageToWebview({ type: 'updateStats', value: updatedStats });
+    
+        const newlyUnlocked = achievementManager.checkAchievements(updatedStats);
+        if (newlyUnlocked.length > 0) {
+            sidebarProvider.postMessageToWebview({ type: 'achievementsUnlocked', value: newlyUnlocked });
+            sidebarProvider.postMessageToWebview({ type: 'updateAchievements', value: achievementManager.getAchievements() });
+        }
     });
 }
 

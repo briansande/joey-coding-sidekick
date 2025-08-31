@@ -1,9 +1,12 @@
 import * as vscode from 'vscode';
 import { getRooApi } from './roocode/api';
 import { StatsManager } from './StatsManager';
+import { SidebarProvider } from './SidebarProvider';
+import { AchievementManager } from './AchievementManager';
 
-export function registerCommands(context: vscode.ExtensionContext, statsManager: StatsManager) {
+export function registerCommands(context: vscode.ExtensionContext, statsManager: StatsManager, sidebarProvider: SidebarProvider) {
     const api = getRooApi();
+    const achievementManager = new AchievementManager(context);
 
     const startTaskDisposable = vscode.commands.registerCommand('joey-coding-sidekick.startTask', async () => {
         if (api) {
@@ -31,5 +34,11 @@ export function registerCommands(context: vscode.ExtensionContext, statsManager:
         vscode.window.showInformationMessage('Joey\'s stats have been cleared.');
     });
 
-    context.subscriptions.push(startTaskDisposable, clearStatsDisposable);
+    const showStatsDisposable = vscode.commands.registerCommand('joey.showStats', () => {
+        const stats = statsManager.getStats();
+        const achievements = achievementManager.getAchievements();
+        sidebarProvider.postMessageToWebview({ type: 'toggleStats', value: { stats, achievements } });
+    });
+
+    context.subscriptions.push(startTaskDisposable, clearStatsDisposable, showStatsDisposable);
 }
